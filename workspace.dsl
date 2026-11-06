@@ -8,7 +8,8 @@ in any form or by any means without express written permission.
 
 /*
 Regra: qualquer alteração neste arquivo exige consulta prévia à documentação
-oficial do Structurizr (docs/refs/structurizr.github.io). Ver ADR-0009.
+oficial do Structurizr (docs/refs/structurizr.github.io) e c4-model (src/modelos/c4-model.md).
+Ver ADR-0009.
 */
 
 workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
@@ -45,17 +46,15 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
     }
 
     views {
-        systemLandscape ecossistema "Visão do Ecossistema" {
-            include *
+        systemLandscape ecossistema "Visão do Ecossistema (L1)" {
         }
-        systemContext lancamentos contexto-lancamentos "Contexto — CashFlow (L1)" {
-            include *
+        systemContext lancamentos contexto-lancamentos "Contexto — Lançamentos (L1)" {
+        }
+        systemContext consolidado contexto-consolidado "Contexto — Consolidado (L1)" {
         }
         container lancamentos containers-lancamentos "Containers — Lançamentos (L2)" {
-            include *
         }
         container consolidado containers-consolidado "Containers — Consolidado (L2)" {
-            include *
         }
     }
 

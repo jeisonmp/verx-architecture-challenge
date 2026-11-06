@@ -1,0 +1,5 @@
+workspace.json
+.structurizr/
+
+# Materiais de entrada do desafio (enunciado/gabarito — não são entregáveis)
+docs/solution-architecture-challenge/

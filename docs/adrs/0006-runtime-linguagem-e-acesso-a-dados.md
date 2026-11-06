@@ -11,6 +11,13 @@ A stack de runtime do backend precisava ser definida em conjunto com a forma de 
 
 O runtime exige justificativa formal (versão **LTS vigente** e correção de **vulnerabilidades transitivas**) e, mais importante, o padrão Outbox/Inbox impõe dois requisitos concretos à escolha: **transação declarativa com hook pós-commit** e **controle explícito do SQL que implementa a atomicidade**.
 
+## Alternativas consideradas
+
+* **Java 21 (LTS) + Spring Boot 3** — escolhida.
+* **.NET 8 / .NET 10 LTS:** tem o equivalente (`TransactionScope` + `IEnlistmentNotification`), mas o núcleo de consistência já estava modelado sobre as primitivas do Spring (ADRs 0003–0005) e o suporte transacional + pós-commit do Spring é o mais ergonômico para o Outbox/Inbox.
+* **SQL leve (`JdbcTemplate` / `jOOQ`)** — escolhida.
+* **ORM (Hibernate/JPA):** descartado para o núcleo transacional (dirty-checking, cache de 1º nível, N+1); pode ser usado em código auxiliar de CRUD se a produtividade compensar (regra de três).
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Sessão de perguntas e respostas entre o time e o agente, registrada como subsídio à decisão.
@@ -49,15 +56,11 @@ Adotar **Java 21 (LTS) + Spring Boot 3**, com **SQL leve** (`JdbcTemplate` / `jO
 - Ecossistema Kafka maduro (Spring Kafka + outbox/inbox consolidados).
 - Java 21 LTS com suporte e atualização vigente.
 
-Alternativa descartada: **.NET 8 / .NET 10 LTS** — tem o equivalente (`TransactionScope` + `IEnlistmentNotification`), mas o núcleo de consistência já estava modelado sobre as primitivas do Spring (ADRs 0003–0005) e o suporte transacional + pós-commit do Spring é o mais ergonômico para o Outbox/Inbox.
-
 ### Acesso a dados — SQL leve, sem ORM
 
 - O núcleo crítico (outbox/inbox/projeção) depende de escritas SQL exatas (`INSERT ... ON CONFLICT DO NOTHING`, `UPDATE ... WHERE status='pending'`), que o SQL leve expõe e torna auditáveis — sem a "magic" do ORM (dirty-checking, cache de 1º nível, N+1).
 - Menor overhead por operação e controle fino do SQL gerado (índices, upserts, batching).
 - **Não** justificado por "alto volume": o requisito é 50 req/s (modesto — YAGNI). O driver é **controle e explicitude da atomicidade**, não throughput.
-
-ORM (Hibernate/JPA) fica descartado para o núcleo transacional; pode ser usado em código auxiliar de CRUD se/onde a produtividade compensar (regra de três).
 
 ## Consequências
 

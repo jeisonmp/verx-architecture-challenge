@@ -9,6 +9,12 @@ decision-makers: Max
 
 Decisões importantes são tomadas em conversas, reuniões e cafés, e se perdem. Quem entra no time meses depois não sabe por que o sistema é como é, e as mesmas discussões se repetem.
 
+## Alternativas consideradas
+
+* Documentar decisões em wiki ou documentos soltos, fora do código.
+* Não documentar formalmente — deixar as decisões implícitas nas conversas.
+* Registrar ADRs versionados no repositório (escolhida).
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.

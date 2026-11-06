@@ -9,6 +9,11 @@ decision-makers: Max
 
 Cada microsserviço precisa persistir seus dados de forma independente (database-per-service), evitando acoplamento no nível de dados (anti-padrão "monólito distribuído"). O Lançamentos exige transações ACID para o Transactional Outbox; o Consolidado exige uma projeção de saldo otimizada para 50 req/s de leitura.
 
+## Alternativas consideradas
+
+* **PostgreSQL (AWS Aurora/RDS)** — escolhida.
+* **MongoDB/NoSQL:** schema flexível, porém transações multi-documento menos robustas para o Outbox e sem ganho para a volumetria exigida.
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.
@@ -21,10 +26,6 @@ Adotar **PostgreSQL (AWS Aurora/RDS)** para ambos os microsserviços, com **um b
 * **Consolidado (leitura):** tabela de projeção desnormalizada de saldo, atualizada pelo consumer com idempotência.
 
 Justificativa: PostgreSQL oferece as transações ACID necessárias ao Outbox (atomicidade entre lançamento e evento), é maduro para dados financeiros relacionais e atende com folga os 50 req/s. Um único motor relacional nos dois serviços reduz a superfície operacional (YAGNI — não há necessidade de NoSQL nesta escala).
-
-Alternativas descartadas:
-
-* **MongoDB/NoSQL:** schema flexível, porém transações multi-documento menos robustas para o Outbox e sem ganho para a volumetria exigida.
 
 ## Consequências
 

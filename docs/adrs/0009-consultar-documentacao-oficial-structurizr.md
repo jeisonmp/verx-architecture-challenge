@@ -9,6 +9,12 @@ decision-makers: Max
 
 O `workspace.dsl` passou por erros sucessivos de parse ao subir o container (`StructurizrDslParserException`): primeiro por identificadores duplicados (`api`/`db` em escopo flat) e depois por keys de view com caracteres fora do conjunto `a-zA-Z0-9_-`. Ambos decorreram de editar o modelo sem validar a sintaxe contra a referência oficial da DSL. A documentação oficial não estava disponível localmente, forçando consultas externas durante cada correção.
 
+## Alternativas consideradas
+
+* Consultar a documentação oficial online a cada correção do modelo.
+* Manter apenas anotações informais dos erros e correções, sem referência versionada.
+* Vendorizar a documentação oficial no repositório e tornar obrigatória a consulta antes de alterar o modelo C4 (escolhida).
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 - **Q:** o container acusa `The identifier "api" is already in use`. **A:** no modo `flat` (padrão), todo identifier é global; `api` e `db` estavam declarados em dois software systems. Corrigido habilitando `!identifiers hierarchical`, que escopa identifiers ao elemento pai e valida as referências pontilhadas (`lancamentos.api`, `consolidado.db`, …) já usadas no arquivo.

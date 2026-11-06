@@ -9,6 +9,12 @@ decision-makers: Max
 
 A solução exige CI automatizado no GitHub Actions, testes cobrindo cenários de falha (DLQ, autorização, idempotência), load test provando 50 req/s e correção de vulnerabilidades em dependências transitivas. Precisamos definir o fluxo da pipeline, os gates de qualidade e onde cada etapa roda — sem gerar imagens no registry (não há aplicação neste repositório).
 
+## Alternativas consideradas
+
+* Pipeline única sem gates de qualidade por branch.
+* Gates idênticos em todas as branches (`dev`, `qas` e `master`).
+* Gates escalonados por branch — análise de código (`dev`) → qualidade (`qas`) → release (`master`), com validações manuais no ambiente local (escolhida).
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.

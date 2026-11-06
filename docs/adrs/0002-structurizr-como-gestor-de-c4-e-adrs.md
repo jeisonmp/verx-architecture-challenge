@@ -9,6 +9,12 @@ decision-makers: Max
 
 A solução exige documentação formal do modelo C4 (Contexto e Containers, níveis L1/L2) e um registro de decisões arquiteturais (ADRs). Precisamos de uma ferramenta que mantenha diagramas e decisões versionados como código no repositório, executável localmente via docker-compose e sem licença paga.
 
+## Alternativas consideradas
+
+* Diagramas manuais (draw.io/PlantUML) versionados como imagem.
+* C4-PlantUML — diagramas como código em PlantUML, sem ADRs integrados.
+* Structurizr DSL — diagramas como código + ADRs integrados (escolhida).
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.

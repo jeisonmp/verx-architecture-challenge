@@ -11,6 +11,13 @@ A solução exige tratar **segurança** (autenticação, autorização, criptogr
 
 Precisamos de uma estratégia de segurança de ponta a ponta — borda (DDoS), autenticação/autorização, gestão de segredos e criptografia — sem credencial hardcoded e sem depender apenas de um JWT básico de longa duração.
 
+## Alternativas consideradas
+
+* **Defesa em camadas sobre serviços gerenciados da AWS** (API Gateway + WAF + Secrets Manager + refresh token) — escolhida.
+* **JWT único de longa duração:** simples, porém sem rotação/revogação — insuficiente para autenticação segura.
+* **Credenciais em variável de ambiente ou arquivo versionado:** falha básica de segurança, explicitamente penalizada.
+* **IAM-only sem API Gateway:** expõe os microsserviços diretamente, sem WAF/rate limiting na borda.
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 > Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.
@@ -37,12 +44,6 @@ Adotar **defesa em camadas (defense in depth)** sobre serviços gerenciados da A
    - **Em repouso:** criptografia ativada no banco (Aurora/RDS) e no Kafka, com KMS para gestão de chaves.
 
 Justificativa: o API Gateway + WAF atendem diretamente a "proteção ativa contra ataques"; o Secrets Manager elimina credencial hardcoded; o refresh token rotativo resolve o ponto de "persistência de autenticação/criptografia". Tudo é gerenciado na AWS, alinhado ao restante da solução.
-
-Alternativas descartadas:
-
-- **JWT único de longa duração:** simples, porém sem rotação/revogação — insuficiente para autenticação segura.
-- **Credenciais em variável de ambiente ou arquivo versionado:** falha básica de segurança, explicitamente penalizada.
-- **IAM-only sem API Gateway:** expõe os microsserviços diretamente, sem WAF/rate limiting na borda.
 
 ## Consequências
 

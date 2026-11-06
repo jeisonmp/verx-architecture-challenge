@@ -9,6 +9,13 @@ decision-makers: Max
 
 O requisito "o serviço de controle não deve ficar indisponível se o consolidado cair" exige desacoplamento entre escrita (Lançamentos) e leitura (Consolidado) via mensageria. Precisamos escolher o broker entre Kafka (MSK), AWS SQS/SNS e RabbitMQ (Amazon MQ).
 
+## Alternativas consideradas
+
+* **Kafka (Amazon MSK Serverless)** — escolhida.
+* **Cluster Kafka autogerenciado (EC2/EKS/MSK Provisioned):** mantém replay/retention e o protocolo Kafka, mas impõe gestão de brokers, Zookeeper/KRaft, patching, janelas de manutenção (downtime), custo de manutenção contínuo e a complexidade de operar Kubernetes para escalabilidade horizontal (StatefulSets, rebalanceamento de partições, dimensionamento de volumes) — incompatível com a meta de eliminar downtime operacional e contrário ao FinOps.
+* **SQS/SNS:** mais barato e sem operação, porém sem replay/log durável e com ordenação limitada (apenas FIFO) — insuficiente para auditoria financeira.
+* **RabbitMQ (Amazon MQ):** maduro e simples, porém sem log de replay/retention e menos adequado a streaming de eventos de longo prazo.
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 ### Q1 — "O MSK Serverless é premissa da solução ou decisão de arquitetura? Permite validar a solução localmente?"
@@ -30,12 +37,6 @@ Adotar **Kafka (Amazon MSK Serverless)** como barramento de eventos. O padrão T
 **Não** adotar um cluster Kafka autogerenciado (EC2/EKS ou MSK Provisioned). O MSK Serverless entrega escalabilidade nativa e downtime operacional eliminado com o mesmo protocolo Kafka, reduz o custo de manutenção (sem gestão de brokers) e elimina a complexidade de infraestrutura de um Kafka autogerenciado em Kubernetes para escalabilidade horizontal — mantendo zero alteração de lógica de negócio entre o broker local de testes e a produção (a autenticação IAM/mTLS é a única diferença de borda).
 
 Justificativa: para um domínio financeiro, o Kafka oferece **log imutável com replay e retenção** (auditoria/reprocessamento de eventos de caixa), **ordenação por chave** e ecossistema maduro de clients Kafka e de padrões outbox/inbox. O MSK Serverless preserva a semântica do Kafka sem gerenciar brokers, com escalabilidade automática, downtime operacional eliminado e cobrança por uso (alinhado a FinOps).
-
-Alternativas descartadas:
-
-* **Cluster Kafka autogerenciado (EC2/EKS/MSK Provisioned):** mantém replay/retention e o protocolo Kafka, mas impõe gestão de brokers, Zookeeper/KRaft, patching, janelas de manutenção (downtime), custo de manutenção contínuo e a complexidade de operar Kubernetes para escalabilidade horizontal (StatefulSets, rebalanceamento de partições, dimensionamento de volumes) — incompatível com a meta de eliminar downtime operacional e contrário ao FinOps.
-* **SQS/SNS:** mais barato e sem operação, porém sem replay/log durável e com ordenação limitada (apenas FIFO) — insuficiente para auditoria financeira.
-* **RabbitMQ (Amazon MQ):** maduro e simples, porém sem log de replay/retention e menos adequado a streaming de eventos de longo prazo.
 
 ## Consequências
 

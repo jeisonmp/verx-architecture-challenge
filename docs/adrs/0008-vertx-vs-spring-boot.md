@@ -13,6 +13,11 @@ A diferença central é o **modelo de concorrência**: o Spring Boot (arquitetur
 
 > Pela regra do ADR-0001, um ADR aceito não é editado: se esta discussão concluir por Vert.x, um novo ADR substituirá a ADR-0006.
 
+## Alternativas consideradas
+
+* **Spring Boot + SQL leve** (ADR-0006) — mantida.
+* **Vert.x + reactive SQL client** — descartada.
+
 ## Histórico da discussão (sessão de iteração — Q&A)
 
 ### 1. Controle cirúrgico de concorrência e conexões

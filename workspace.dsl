@@ -6,7 +6,14 @@ No part of this software may be reproduced, distributed, or transmitted
 in any form or by any means without express written permission.
 */
 
+/*
+Regra: qualquer alteração neste arquivo exige consulta prévia à documentação
+oficial do Structurizr (docs/refs/structurizr.github.io). Ver ADR-0009.
+*/
+
 workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
+
+    !identifiers hierarchical
 
     model {
         cliente = person "Cliente" "Usuário que lança e consulta o fluxo de caixa"
@@ -38,19 +45,18 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
     }
 
     views {
-        systemLandscape "Visão do Ecossistema" {
+        systemLandscape ecossistema "Visão do Ecossistema" {
             include *
         }
-        systemContext lancamentos "Contexto — CashFlow (L1)" {
+        systemContext lancamentos contexto-lancamentos "Contexto — CashFlow (L1)" {
             include *
         }
-        container lancamentos "Containers — Lançamentos (L2)" {
+        container lancamentos containers-lancamentos "Containers — Lançamentos (L2)" {
             include *
         }
-        container consolidado "Containers — Consolidado (L2)" {
+        container consolidado containers-consolidado "Containers — Consolidado (L2)" {
             include *
         }
-        theme default
     }
 
     !adrs ./docs/adrs

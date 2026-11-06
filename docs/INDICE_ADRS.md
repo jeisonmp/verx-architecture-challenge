@@ -12,3 +12,4 @@
 | 0006 | [Runtime, linguagem e acesso a dados do backend](adrs/0006-runtime-linguagem-e-acesso-a-dados.md) | accepted | 2026-11-05 |
 | 0007 | [Segurança em camadas: API Gateway + WAF + Secrets Manager + refresh tokens](adrs/0007-seguranca-api-gateway-waf-secrets-manager.md) | proposed | 2026-11-05 |
 | 0008 | [Vert.x vs Spring Boot — o que muda no contexto Outbox/Inbox](adrs/0008-vertx-vs-spring-boot.md) | accepted | 2026-11-05 |
+| 0009 | [Consultar a documentação oficial do Structurizr antes de qualquer alteração no modelo C4](adrs/0009-consultar-documentacao-oficial-structurizr.md) | accepted | 2026-11-06 |

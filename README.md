@@ -27,16 +27,16 @@ Acesse o Structurizr em http://localhost:8089 (modelo C4 + ADRs).
 ### Fluxo de branches
 
 ```
-dev → qas → master
+feat/fix/* → dev → master
 ```
 
 ### Automatizado no GitHub Actions
 
 | PR | Etapas | Gate de merge |
 |---|---|---|
-| **→ `dev`** | SAST (SonarQube + análise estática do runtime) · SCA (OWASP Dependency-Check/Dependabot) · gitleaks | **0 risco crítico** (médios mitigáveis) |
-| **`dev` → `qas`** | Testes unitários + integração (containers: PostgreSQL + Kafka) · cobertura de código | 100% dos testes passando · cobertura ≥ 80% (meta 90% no núcleo outbox/inbox) |
-| **`qas` → `master`** | `terraform validate` + tfsec/checkov · release/tag (semantic-release) | — |
+| **`feat/fix/*` → `dev`** | SAST (SonarQube + análise estática do runtime) · SCA (OWASP Dependency-Check/Dependabot) · gitleaks | **0 risco crítico** (médios mitigáveis) |
+| **`dev` → `master`** | Testes unitários + integração (containers: PostgreSQL + Kafka) · cobertura de código | 100% dos testes passando · cobertura ≥ 80% (meta 90% no núcleo outbox/inbox) |
+| **`master`** | `terraform validate` + tfsec/checkov · release/tag (semantic-release) | — |
 
 ### Validação manual (local)
 
@@ -69,6 +69,7 @@ Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no
 ### Release e tags
 
 - Release, versão, `CHANGELOG.md` e tag são derivados dos Conventional Commits pelo semantic-release (base `.github/workflows/release.yml`).
+- A release é disparada no `push` a `master`/`dev` **após o merge** de um PR. A **aprovação do PR** é garantida por **branch protection** (`master` e `dev` com "Require pull request before merging" + ≥1 approval) — não pelo workflow.
 - A pipeline **não** faz build/push de imagem Docker.
 
 ## Documentação

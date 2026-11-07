@@ -6,7 +6,7 @@
 
 name: release
 
-# ADR-0005 — Pipeline de CI no GitHub Actions (dev → qas → master).
+# ADR-0005 — Pipeline de CI no GitHub Actions (dev → master).
 #
 # Este workflow é a base de release da pipeline: deriva versão, CHANGELOG, tag e
 # GitHub Release dos Conventional Commits (semantic-release) no push a `master`
@@ -15,12 +15,19 @@ name: release
 # As demais etapas da ADR-0005 ficam em workflows dedicados (Sprint 1+) e NÃO
 # estão implementadas aqui — apenas os estágios estão mapeados:
 #
-#   §1 PR → dev     : análise de código — SAST (SonarQube) + SCA (OWASP
+#   §1 PR → dev: análise de código — SAST (SonarQube) + SCA (OWASP
 #                     Dependency-Check) + gitleaks; gate: 0 risco crítico.
-#   §2 dev → qas    : qualidade — testes unitários/integração (containers
+#   §2 PR dev → master: qualidade — testes unitários/integração (containers
 #                     PostgreSQL + Kafka) + cobertura ≥ 80% (meta 90% outbox/inbox).
-#   §3 qas → master : release — terraform validate + tfsec/checkov (automático)
+#   §3 master: release — terraform validate + tfsec/checkov (automático)
 #                     antes deste job de release (semantic-release).
+#
+# Gate de aprovação de PR: a aprovação é aplicada por BRANCH PROTECTION
+# (GitHub Settings → Branches), não por este workflow. O semantic-release publica
+# tag + CHANGELOG no `push` à branch protegida APÓS o merge de um PR aprovado.
+# Requisitos: `master` e `dev` com "Require pull request before merging" + ≥1
+# approval; e a RELEASE_TOKEN (PAT) precisa de bypass de branch protection para o
+# commit do CHANGELOG gerado por @semantic-release/git.
 #
 # Este repositório não publica imagens OCI nem binários (ambiente 100% local):
 # o job é único e não há build/push de imagem.
@@ -50,7 +57,7 @@ jobs:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           semantic_version: 24
           extra_plugins: |

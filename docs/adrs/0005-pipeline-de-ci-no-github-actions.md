@@ -3,7 +3,7 @@ status: proposed
 date: 2026-11-05
 decision-makers: Max
 ---
-# 0005. Pipeline de CI no GitHub Actions (dev → qas → master)
+# 0005. Pipeline de CI no GitHub Actions (dev → master)
 
 ## Contexto e problema
 
@@ -12,8 +12,8 @@ A solução exige CI automatizado no GitHub Actions, testes cobrindo cenários d
 ## Alternativas consideradas
 
 * Pipeline única sem gates de qualidade por branch.
-* Gates idênticos em todas as branches (`dev`, `qas` e `master`).
-* Gates escalonados por branch — análise de código (`dev`) → qualidade (`qas`) → release (`master`), com validações manuais no ambiente local (escolhida).
+* Gates idênticos em todas as branches (`dev` e `master`).
+* Gates escalonados por branch — análise de código (PR → `dev`) → qualidade (PR `dev` → `master`) → release (`master`), com validações manuais no ambiente local (escolhida).
 
 ## Histórico da discussão (sessão de iteração — Q&A)
 
@@ -21,7 +21,7 @@ A solução exige CI automatizado no GitHub Actions, testes cobrindo cenários d
 
 ## Decisão
 
-Adotar um workflow GitHub Actions com fluxo de branches `dev → qas → master`, mantendo o sistema de tags existente (base `.github/workflows/release.yml`).
+Adotar um workflow GitHub Actions com fluxo de branches `dev → master`, mantendo o sistema de tags existente (base `.github/workflows/release.yml`).
 
 ### 1. PR → `dev` — análise de código
 
@@ -32,12 +32,12 @@ Adotar um workflow GitHub Actions com fluxo de branches `dev → qas → master`
 * Relatório publicado na execução da pipeline (artefato de resumo).
 * **Gate:** nenhum risco **crítico** (blocker). Riscos **médios** podem ser mitigados/aceitos com justificativa documentada.
 
-### 2. PR `dev → qas` — qualidade
+### 2. PR `dev → master` — qualidade
 
 * Todos os testes unitários e de integração (containers: PostgreSQL + Kafka) com sucesso.
 * Cobertura de código: gate **80% de linhas** (mínimo bloqueante), meta **90%** no núcleo de domínio (outbox/inbox) — ferramenta conforme o runtime do ADR-0006.
 
-### 3. PR `qas → master` — release
+### 3. `master` — release
 
 * Validação de IaC: `terraform validate` + tfsec/checkov (automático).
 * Release/tag mantida pelo workflow existente (semantic-release — `release.yml`).

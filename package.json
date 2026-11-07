@@ -1,0 +1,10 @@
+{
+  "name": "verx-architecture-challenge",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Semantic Release runtime for the verx-architecture-challenge pipeline (versioning + changelog only; the product itself is Java 21 / Spring Boot 3, not an npm package).",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeisonmp/verx-architecture-challenge.git"
+  }
+}

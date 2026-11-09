@@ -39,7 +39,7 @@ A diferença central é o **modelo de concorrência**: o Spring Boot (arquitetur
 - **Spring Boot:** vence massivamente em ecossistema e facilidade — o modelo mental linear (imperativo) é muito mais fácil de codificar, testar e auditar por desenvolvedores tradicionais.
 - **Vert.x:** exige domínio de programação reativa (Futures/Promises ou RxJava/Mutiny). Rastrear o fluxo para auditoria (Distributed Tracing / Correlation IDs) exige ferramentas específicas (ex.: OpenTelemetry integrado), pois o ID da transação não fica mais preso a uma única thread (ThreadLocal).
 
-## Pontos a aprofundar (contrapontos)
+### Pontos a aprofundar (contrapontos)
 
 - **Tensão com o requisito de volume:** a ADR-0004 define 50 req/s — modesto. O argumento central do Vert.x (item 1) assume "milhares de PIX/s", um cenário de escala ainda não exigido. Decidir por Vert.x por throughput violaria o YAGNI, salvo se houver requisito de pico não documentado.
 - **Atomicidade continua no banco:** o Outbox/Inbox segue dependendo de transação ACID + unique constraint — o modelo reativo muda a *entrega* (não-bloqueante), não a garantia de "exatamente uma vez".

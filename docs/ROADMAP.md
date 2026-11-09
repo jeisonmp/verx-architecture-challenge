@@ -56,7 +56,7 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - [x] ADR-0009 — Consultar a doc oficial do Structurizr antes de alterar o modelo C4 — **accepted**
 - [x] ADR-0010 — Orquestração (ECS Fargate vs EKS) — **accepted**
 - [x] ADR-0011 — Observabilidade (logs JSON + métricas CloudWatch + tracing X-Ray/ADOT) — **accepted**
-- [x] ADR-0012 — IaC Terraform + FinOps (infra documentada, não implementada) — **accepted**
+- [x] ADR-0012 — IaC Terraform + FinOps (infra declarada em .tf, sem apply) — **accepted**
 
 **Decisões pendentes (pré-requisito do C4/docs)**
 
@@ -79,11 +79,11 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - `release.yml` (estágio §3 — release) depende de ADR-0005 + `GITFLOW.md`; §1/§2 (SAST/SCA, testes+cobertura) ficam para o Sprint 1.
 - `workspace.dsl` desenha as decisões de ADR-0002/0003/0004/0006/0007/0010.
 - ADR-0011 (observabilidade) usa a stack AWS da ADR-0007/0010 — CloudWatch + X-Ray/ADOT, sem infra extra.
-- ADR-0012 (IaC/FinOps) define Terraform + organização `repos/` e a infra documentada (não implementada) no `repos/infra/README.md`.
+- ADR-0012 (IaC/FinOps) define Terraform + organização `repos/` e a infra declarada em `.tf` (sem apply) em `repos/infra/`.
 
 ## Escopo do Terraform (ADR-0012)
 
-A infra é **documentada, não implementada** (ver `repos/infra/README.md`). O Terraform descreveria:
+A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/` (ECS Fargate, MSK Serverless, RDS PostgreSQL). O Terraform descreve:
 
 | Recurso AWS | O que faz | ADR |
 |---|---|---|

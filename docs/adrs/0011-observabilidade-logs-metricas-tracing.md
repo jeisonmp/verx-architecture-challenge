@@ -55,7 +55,9 @@ Adotar **observabilidade AWS-native**, sem infra própria:
 2. **Métricas — Micrometer** (Spring Boot Actuator) → **CloudWatch** (`micrometer-registry-cloudwatch`/EMF). Latência/erros/taxa HTTP, consumer lag do Kafka, contadores de outbox/inbox, JVM.
 3. **Tracing — ADOT** (OpenTelemetry SDK, W3C Trace Context) → **AWS X-Ray**, com auto-instrumentação no ECS. Propagação por headers **HTTP** e **headers do evento Kafka** (`lancamento.criado`), ligando A → B num único trace.
 
-Justificativa: correlation ID atravessa o barramento (trace fim-a-fim A→B) sem infra extra — CloudWatch/X-Ray são gerenciados e pay-per-use (FinOps). A instrumentação OTel mantém o backend trocável sem tocar no código de negócio.
+Justificativa: correlation ID atravessa o barramento (trace fim-a-fim A→B) sem infra própria — CloudWatch e X-Ray são gerenciados e pay-per-use (FinOps). A instrumentação via OTel SDK mantém o código **agnóstico e padronizado** (W3C Trace Context): o lock-in fica no backend gerenciado da AWS, não no código — trocar de backend é questão de config de exporter, sem tocar no negócio.
+
+Evitar o **OpenTelemetry puro** (Collector + Prometheus + Jaeger próprios) elimina três custos reais: (1) **infraestrutura de logs/rastreabilidade para sustentar**; (2) **equipe dedicada** para operar e escalar esses servidores; e (3) o risco de **fate sharing** — num pico, os servidores de logs tenderiam a cair junto com os serviços, deixando a operação no escuro. Com o sidecar da AWS, o armazenamento, a escalabilidade e a visualização ficam **100% delegados à AWS** (X-Ray para rastreabilidade, CloudWatch para logs), e o código permanece livre e padronizado — sem dor de cabeça operacional.
 
 ## Refinamento — ambiente local (sem AWS)
 

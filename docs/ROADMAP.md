@@ -7,18 +7,18 @@
 ## Estado atual (2026-11-09)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
-- ✅ ADRs 0001..0011 registrados — **todos accepted**.
+- ✅ ADRs 0001..0012 registrados — **todos accepted**.
 - ✅ Norma de branches/versionamento (`GITFLOW.md`) + base de release (`release.yml`, semantic-release — estágio §3 da ADR-0005).
 - ✅ `README.md` populado (execução local + validação manual).
-- ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ e ator `cliente` (camada UI/Cliente) adicionados às visões L1/L2.
+- ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e view de **deployment (infra AWS)** — visões L1/L2/L3.
 - ⏳ Docs em esqueleto (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
-- ⏳ ADR em aberto: IaC/FinOps (0012).
+- ⏳ Pendência: regra anti-monólito distribuído (sem lib compartilhada A↔B).
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
 O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem correta: **decidir (ADR) → desenhar (C4) → narrar (docs)**.
 
-1. **Fechar os ADRs em aberto** — IaC/FinOps (0012), além da regra anti-monólito distribuído.
+1. **Fechar a regra anti-monólito distribuído** — sem libs compartilhadas A↔B (última pendência do Sprint 0).
 2. **Popular as docs obrigatórias** — `BUSINESS.md` (domínios/capacidades), `GLOSSARY.md`, `ARCHITECTURE.md` (arquitetura-alvo).
 
 > Sprints 1+ (código, testes, IaC, FinOps) começam depois de congelado o Sprint 0.
@@ -28,7 +28,7 @@ O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem
 | Dimensão | Decisão proposta | Status |
 |---|---|---|
 | Cloud | AWS | premissa |
-| IaC | Terraform | a decidir (ADR-0012) |
+| IaC | Terraform (HCL) | ✅ ADR-0012 (accepted) |
 | Linguagem | Java 21 (LTS) + Spring Boot 3 · SQL leve (JDBI + Spring Data JDBC — combo) | ✅ ADR-0006 + ADR-0008 (accepted) |
 | Arquitetura | CQRS + Transactional Outbox / Inbox | premissa |
 | Mensageria | Kafka (MSK Serverless) | ✅ ADR-0003 (accepted) |
@@ -36,7 +36,7 @@ O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem
 | Orquestração | ECS Fargate (sem EKS pré-existente) | ✅ ADR-0010 (accepted) |
 | Segurança | API Gateway + WAF + Cognito + Secrets Manager/IAM (passwordless) + refresh tokens | ✅ ADR-0007 (accepted) |
 | Observabilidade | Structured logging (JSON) + CloudWatch + tracing X-Ray (ADOT) | ✅ ADR-0011 (accepted) |
-| FinOps | AWS Pricing Calculator (estimativa mensal) | a decidir (ADR-0012) |
+| FinOps | AWS Pricing Calculator (estimativa mensal) | ✅ ADR-0012 (accepted) |
 | Documentação | C4 (Structurizr) + ADRs (MADR) | ✅ em curso |
 
 ## Sprint 0 — Definições de Arquitetura (em andamento)
@@ -56,15 +56,15 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - [x] ADR-0009 — Consultar a doc oficial do Structurizr antes de alterar o modelo C4 — **accepted**
 - [x] ADR-0010 — Orquestração (ECS Fargate vs EKS) — **accepted**
 - [x] ADR-0011 — Observabilidade (logs JSON + métricas CloudWatch + tracing X-Ray/ADOT) — **accepted**
+- [x] ADR-0012 — IaC Terraform + FinOps (infra documentada, não implementada) — **accepted**
 
 **Decisões pendentes (pré-requisito do C4/docs)**
 
-- [ ] ADR-0012 — IaC Terraform + FinOps (estimativa AWS Pricing Calculator)
 - [ ] Regra anti-monólito distribuído (sem libs compartilhadas A↔B)
 
 **Documentação C4 + docs (após as decisões)**
 
-- [x] `workspace.dsl` — borda (API Gateway + WAF), DLQ e ator `cliente` (camada UI/Cliente); visões L1/L2
+- [x] `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e deployment (infra AWS); visões L1/L2/L3
 - [ ] `BUSINESS.md` — mapeamento de domínios funcionais e capacidades de negócio
 - [ ] `GLOSSARY.md` — vocabulário do domínio
 - [ ] `ARCHITECTURE.md` — arquitetura-alvo (desenho completo da solução)
@@ -72,13 +72,34 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 
 **Dependências (encadeamento de decisões)**
 
-- ADR-0001 (processo) → ADR-0002..0010 (decisões de domínio/técnica).
+- ADR-0001 (processo) → ADR-0002..0012 (decisões de domínio/técnica).
 - ADR-0005 (CI) depende de ADR-0006 (runtime) + `GITFLOW.md` (branches/tags).
 - ADR-0007 (segurança) define a borda (API Gateway + WAF) e a gestão de segredos (IAM passwordless) desenhadas no `workspace.dsl`.
 - ADR-0010 (orquestração) define ECS Fargate + task role (integração com ADR-0007).
 - `release.yml` (estágio §3 — release) depende de ADR-0005 + `GITFLOW.md`; §1/§2 (SAST/SCA, testes+cobertura) ficam para o Sprint 1.
 - `workspace.dsl` desenha as decisões de ADR-0002/0003/0004/0006/0007/0010.
 - ADR-0011 (observabilidade) usa a stack AWS da ADR-0007/0010 — CloudWatch + X-Ray/ADOT, sem infra extra.
+- ADR-0012 (IaC/FinOps) define Terraform + organização `repos/` e a infra documentada (não implementada) no `repos/infra/README.md`.
+
+## Escopo do Terraform (ADR-0012)
+
+A infra é **documentada, não implementada** (ver `repos/infra/README.md`). O Terraform descreveria:
+
+| Recurso AWS | O que faz | ADR |
+|---|---|---|
+| VPC + sub-redes | rede isolada dos serviços (sub-rede privada) | — |
+| ECS Fargate | orquestração dos containers A e B (sem control plane) | 0010 |
+| ALB | entrada do tráfego no ECS | 0010 |
+| RDS PostgreSQL | bancos de escrita (A) e projeção (B) | 0004 |
+| MSK Serverless | barramento Kafka (`lancamento.criado` + DLQ) | 0003 |
+| API Gateway | borda única (POST /lancamentos, GET /consolidado) | 0007 |
+| AWS WAF | proteção ativa / rate limiting (apenas produção) | 0007 |
+| Cognito | autenticação (JWT) + refresh tokens | 0007 |
+| Secrets Manager | fallback para segredos não IAM-ificados | 0007 |
+| KMS | chaves de criptografia em repouso | 0007 |
+| CloudWatch + X-Ray | logs, métricas e tracing | 0011 |
+| IAM (task role) | identidade dos containers (RDS IAM + MSK IAM) | 0007/0010 |
+| NAT Instance (dev) | egress da sub-rede privada em dev | 0012 |
 
 ## Sprint 1 — Fundação e Ambiente
 

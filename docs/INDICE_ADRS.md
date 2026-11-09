@@ -13,3 +13,4 @@
 | 0009 | [Consultar a documentação oficial do Structurizr antes de qualquer alteração no modelo C4](adrs/0009-consultar-documentacao-oficial-structurizr.md) | accepted | 2026-11-06 |
 | 0010 | [Orquestração dos microsserviços — ECS Fargate vs EKS](adrs/0010-orquestracao-ecs-fargate-vs-eks.md) | accepted | 2026-11-09 |
 | 0011 | [Observabilidade — logs JSON, métricas CloudWatch e tracing X-Ray (ADOT)](adrs/0011-observabilidade-logs-metricas-tracing.md) | accepted | 2026-11-09 |
+| 0012 | [IaC Terraform + FinOps — organização repos/, infra documentada (não implementada)](adrs/0012-iac-terraform-finops.md) | accepted | 2026-11-09 |

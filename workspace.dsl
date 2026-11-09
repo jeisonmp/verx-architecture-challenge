@@ -48,6 +48,44 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
         consolidado.consumer -> consolidado.db "Atualiza projeção (idempotente)"
         consolidado.consumer -> broker.dlq "Desvia evento não processável (retry excedido)"
         consolidado.api -> consolidado.db "Lê projeção"
+
+        aws = deploymentEnvironment "AWS — Alvo (produção)" {
+            deploymentNode "Amazon Web Services" "Provedor de nuvem" {
+                deploymentNode "us-east-1" "Região" {
+                    infrastructureNode "AWS WAF" "Proteção ativa — rate limiting (apenas produção)" "AWS WAF"
+                    softwareSystemInstance gateway
+                    infrastructureNode "Amazon Cognito" "Autenticação (JWT) + refresh tokens" "Amazon Cognito"
+
+                    deploymentNode "VPC" "Rede isolada dos serviços" {
+                        deploymentNode "Sub-rede privada" {
+                            deploymentNode "ECS Fargate — Serviço A" "Lançamentos" "AWS Fargate" {
+                                containerInstance lancamentos.api
+                                containerInstance lancamentos.outboxWorker
+                            }
+                            deploymentNode "ECS Fargate — Serviço B" "Consolidado" "AWS Fargate" {
+                                containerInstance consolidado.api
+                                containerInstance consolidado.consumer
+                            }
+                        }
+                        deploymentNode "Amazon RDS" "PostgreSQL" "Amazon RDS" {
+                            deploymentNode "PostgreSQL — Lançamentos" {
+                                containerInstance lancamentos.db
+                            }
+                            deploymentNode "PostgreSQL — Consolidado" {
+                                containerInstance consolidado.db
+                            }
+                        }
+                        deploymentNode "Amazon MSK Serverless" "Kafka — lancamento.criado + DLQ" "Amazon MSK" {
+                            softwareSystemInstance broker
+                        }
+                    }
+
+                    infrastructureNode "AWS Secrets Manager" "Fallback para segredos não IAM-ificados" "AWS Secrets Manager"
+                    infrastructureNode "AWS KMS" "Gestão de chaves (criptografia em repouso)" "AWS KMS"
+                    infrastructureNode "CloudWatch + X-Ray" "Logs, métricas e tracing" "Amazon CloudWatch"
+                }
+            }
+        }
     }
 
     views {
@@ -64,6 +102,9 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
             include *
         }
         container consolidado containers-consolidado "Containers — Consolidado (L2)" {
+            include *
+        }
+        deployment * aws deployment-infra "Deployment — Infra AWS (L3)" {
             include *
         }
     }

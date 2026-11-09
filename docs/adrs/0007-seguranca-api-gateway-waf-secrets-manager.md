@@ -20,7 +20,17 @@ Precisamos de uma estratégia de segurança de ponta a ponta — borda (DDoS), a
 
 ## Histórico da discussão (sessão de iteração — Q&A)
 
-> Histórico de iteração Q&A não registrado — decisão anterior à adoção deste padrão.
+### Q1 — "A integração dos serviços (containers) com o Secrets Manager seria via sidecar? Exigiria Kubernetes?"
+
+**R:** Não — sidecar não é necessário nem obriga Kubernetes. O padrão idiomático AWS é a app buscar o segredo no startup via **Spring Cloud AWS** (`spring-cloud-aws-starter-secrets-manager`, dependência Maven — não um container extra), autorizada pela **task role** (ECS Fargate) ou IRSA (EKS). Zero sidecar: o app de negócio fica agnóstico de credencial; a segurança vive na borda (Gateway/WAF) e no IAM. Sidecar só se houvesse requisito de "a app não fala com AWS".
+
+### Q2 — "Como o Spring Cloud AWS Secrets Manager faz a rotação, se o segredo é lido só no startup?"
+
+**R:** A rotação é **orquestrada no lado AWS** por uma **Lambda de rotação** do Secrets Manager (cria a nova versão `AWSCURRENT` e atualiza o recurso dependente). A lib **não "assiste" a rotação sozinha** — a app repõe a nova versão de duas formas: (a) **restart/redeploy** (padrão ECS: rolling update pós-rotação; o startup relê `AWSCURRENT`) ou (b) **`@RefreshScope`** (refresh via `/actuator/refresh` ou Spring Cloud Bus, sem restart). Para credencial de banco, o caminho que elimina a rotação é **RDS IAM auth** (token de vida curta) ou o **AWS JDBC wrapper** (recarrega no reconnect).
+
+### Q3 — "Front-end / página de consumo / login com AD são necessários?"
+
+**R:** Não — fora do escopo do desafio (backend CQRS). O "consumo de relatórios" é `GET /consolidado` via `api_key` (máquina-a-máquina). A "camada UI/Cliente" do feedback refere-se ao C4 L1/L2, não a um app web. Identidade humana/AD seria scope creep (YAGNI); se desejado no futuro, seria Cognito + SAML 2.0 federado ao AD.
 
 ## Decisão
 

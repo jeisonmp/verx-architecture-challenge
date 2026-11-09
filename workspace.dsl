@@ -17,7 +17,9 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
     !identifiers hierarchical
 
     model {
-        cliente = person "Cliente" "Usuário que lança e consulta o fluxo de caixa"
+        cliente = person "Cliente" "Usuário/Integrador que lança e consulta o fluxo de caixa (UI/cliente ou integração api_key)"
+
+        gateway = softwareSystem "API Gateway + WAF" "Borda única — WAF, rate limiting, TLS 1.2+, autenticação Cognito e api_key" "Amazon API Gateway + AWS WAF"
 
         lancamentos = softwareSystem "CashFlow · Lançamentos" "Microsserviço A — escrita (POST + Transactional Outbox)" {
             api = container "API de Lançamentos" "Recebe POST /lancamentos" "Java 21 / Spring Boot"
@@ -27,6 +29,7 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
 
         broker = softwareSystem "Kafka" "Barramento de eventos (escrita → leitura)" {
             topic = container "Tópico lancamento.criado" "Evento de lançamento criado" "Apache Kafka"
+            dlq = container "Tópico lancamento.dlq" "Eventos não processáveis após retries (dead letter)" "Apache Kafka"
         }
 
         consolidado = softwareSystem "CashFlow · Consolidado" "Microsserviço B — leitura/projeção (Inbox + idempotência)" {
@@ -35,26 +38,33 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
             db = container "DB Consolidado" "Projeção de saldo otimizada para leitura" "PostgreSQL"
         }
 
-        cliente -> lancamentos.api "Faz lançamento (POST)"
+        cliente -> gateway "Faz lançamento (POST) e consulta (GET)"
+        gateway -> lancamentos.api "POST /lancamentos (JWT/Cognito)"
+        gateway -> consolidado.api "GET /consolidado (JWT ou api_key)"
         lancamentos.api -> lancamentos.db "Grava lançamento + evento (outbox, mesma transação)"
         lancamentos.outboxWorker -> lancamentos.db "Lê eventos pendentes"
         lancamentos.outboxWorker -> broker.topic "Publica evento"
         broker.topic -> consolidado.consumer "Entrega evento"
         consolidado.consumer -> consolidado.db "Atualiza projeção (idempotente)"
-        cliente -> consolidado.api "Consulta saldo consolidado (GET)"
+        consolidado.consumer -> broker.dlq "Desvia evento não processável (retry excedido)"
         consolidado.api -> consolidado.db "Lê projeção"
     }
 
     views {
         systemLandscape ecossistema "Visão do Ecossistema (L1)" {
+            include *
         }
         systemContext lancamentos contexto-lancamentos "Contexto — Lançamentos (L1)" {
+            include *
         }
         systemContext consolidado contexto-consolidado "Contexto — Consolidado (L1)" {
+            include *
         }
         container lancamentos containers-lancamentos "Containers — Lançamentos (L2)" {
+            include *
         }
         container consolidado containers-consolidado "Containers — Consolidado (L2)" {
+            include *
         }
     }
 

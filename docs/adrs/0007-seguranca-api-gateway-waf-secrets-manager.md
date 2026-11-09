@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 date: 2026-11-05
 decision-makers: Max
 ---
@@ -24,13 +24,22 @@ Precisamos de uma estratégia de segurança de ponta a ponta — borda (DDoS), a
 
 **R:** Não — sidecar não é necessário nem obriga Kubernetes. O padrão idiomático AWS é a app buscar o segredo no startup via **Spring Cloud AWS** (`spring-cloud-aws-starter-secrets-manager`, dependência Maven — não um container extra), autorizada pela **task role** (ECS Fargate) ou IRSA (EKS). Zero sidecar: o app de negócio fica agnóstico de credencial; a segurança vive na borda (Gateway/WAF) e no IAM. Sidecar só se houvesse requisito de "a app não fala com AWS".
 
-### Q2 — "Como o Spring Cloud AWS Secrets Manager faz a rotação, se o segredo é lido só no startup?"
+### Q2 — "Como o Secrets Manager faz a rotação sem downtime? E como isso fica framework-agnóstico?"
 
-**R:** A rotação é **orquestrada no lado AWS** por uma **Lambda de rotação** do Secrets Manager (cria a nova versão `AWSCURRENT` e atualiza o recurso dependente). A lib **não "assiste" a rotação sozinha** — a app repõe a nova versão de duas formas: (a) **restart/redeploy** (padrão ECS: rolling update pós-rotação; o startup relê `AWSCURRENT`) ou (b) **`@RefreshScope`** (refresh via `/actuator/refresh` ou Spring Cloud Bus, sem restart). Para credencial de banco, o caminho que elimina a rotação é **RDS IAM auth** (token de vida curta) ou o **AWS JDBC wrapper** (recarrega no reconnect).
+**R:** A rotação é orquestrada no lado AWS por uma **Lambda de rotação** do Secrets Manager (cria a nova versão `AWSCURRENT` e atualiza o recurso dependente). Dois refinamentos:
+
+1. **Downtime:** o "restart" no ECS é um **rolling update zero-downtime** (min/max healthy percent + health checks + connection draining no ALB): a task antiga segue servindo até a nova estar saudável. Sem janela de indisponibilidade — mas restart-por-rotação é pesado e evitável.
+2. **Framework-agnóstico:** `@RefreshScope` é específico do Spring/Java e **não** é premissa válida para ambiente poliglota. O caminho agnóstico é eliminar a rotação na fonte: **RDS IAM auth** (banco) e **MSK IAM auth** (Kafka) tornam a credencial *passwordless* (token de vida curta, no nível de protocolo/driver, sem segredo a rotacionar). Para os segredos residuais (chaves de assinatura JWT, `api_key`), o refresh agnóstico é **driver wrapper** (JDBC/Python/Node) ou **sidecar/ESO** — não `@RefreshScope`.
 
 ### Q3 — "Front-end / página de consumo / login com AD são necessários?"
 
 **R:** Não — fora do escopo do desafio (backend CQRS). O "consumo de relatórios" é `GET /consolidado` via `api_key` (máquina-a-máquina). A "camada UI/Cliente" do feedback refere-se ao C4 L1/L2, não a um app web. Identidade humana/AD seria scope creep (YAGNI); se desejado no futuro, seria Cognito + SAML 2.0 federado ao AD.
+
+### Q4 — "Como o serviço valida o token? E por que não separar a autenticação num sidecar?"
+
+**R:** A validação do JWT **não** é via Spring Cloud AWS — é via **Spring Security OAuth2 Resource Server**. O serviço baixa o JWKS do Cognito no startup e **verifica a assinatura** localmente (o JWT é *assinado*, não *criptografado* — o payload é legível; a assinatura garante integridade/autenticidade), **sem chamada ao IdP por requisição**. O Spring Cloud AWS fica restrito ao Secrets Manager.
+
+O **sidecar de autenticação** (Envoy/Istio/App Mesh) é um padrão legítimo, mas foi **descartado nesta escala** por cinco razões: (1) a carga de verificação RSA é desprezível a 50 req/s; (2) a separação auth×negócio já existe dentro do serviço (filtro do framework + `@PreAuthorize` declarativo); (3) sidecar dobra containers e operação (YAGNI); (4) cria novo problema de confiança — o serviço confiaria em headers injetados, exigindo isolamento de rede; (5) framework-agnosticismo não é requisito — stack homogêneo Java/Spring. **Reabrir se o cenário virar poliglota/alta escala.**
 
 ## Decisão
 
@@ -42,16 +51,25 @@ Adotar **defesa em camadas (defense in depth)** sobre serviços gerenciados da A
    - TLS 1.2+ (HTTPS) obrigatório em todo o tráfego.
 
 2. **Autenticação e autorização**
-   - OAuth2/OIDC: **access token** (JWT) de curta duração (~5 min) + **refresh token rotativo**, com detecção e revogação por reuso.
-   - Autorização por escopo: `cashflow:write` (Lançamentos) e `cashflow:read` (Consolidado).
-   - **`api_key`** para integrações máquina-a-máquina (consumo de serviços), com rate limit próprio — atende o diferencial de segurança para consumo.
+   - **Autenticação (quem é):** **Cognito** (User Pools) emite access token (JWT, ~5 min) + refresh token rotativo (detecção/revogação por reuso). O **API Gateway** valida o JWT na borda (Cognito Authorizer).
+   - **Autorização (o que pode):** o Cognito **fornece as claims** (`cashflow:write`/`cashflow:read`); a enforcement é **dupla** — **API Gateway** (OAuth scopes na borda) **e serviço** (filtro, zero-trust).
+   - **Validação no serviço (offline):** **Spring Security OAuth2 Resource Server** baixa o JWKS do Cognito no startup e **verifica a assinatura** (o JWT é assinado, não criptografado) localmente — sem chamada ao IdP por requisição. Escopo via `@PreAuthorize("hasAuthority('SCOPE_…')")`.
+   - **`api_key`** (integrações máquina-a-máquina): validado **100% na borda** (usage plan + rate limit próprio) — o serviço não vê.
+   - **Sidecar de autenticação — avaliado e descartado** (razões no Histórico Q4); reabrir se o cenário virar poliglota/alta escala.
 
-3. **Gestão de segredos — AWS Secrets Manager**
-   - Credenciais de banco, chaves do Kafka e segredos de assinatura JWT são injetados em runtime via **Secrets Manager + IAM**. Nada em texto puro no código ou em variável de ambiente versionada.
+3. **Gestão de segredos — IAM auth (passwordless)**
+   - **Banco e Kafka passwordless via IAM:** **RDS IAM auth** (PostgreSQL) e **MSK IAM auth** (Kafka) usam token de vida curta no nível de protocolo/driver — elimina segredo estático e a necessidade de rotação. O acesso é autorizado pela **task role** (ECS Fargate).
+   - **Segredos estáticos eliminados nos serviços:** a chave de assinatura JWT vive no **Cognito** (o serviço só tem a chave pública do JWKS); o `api_key` vive no **API Gateway**. O serviço, portanto, **não guarda segredo estático**.
+   - **Secrets Manager como fallback:** só para segredos que não podem ser IAM-ificados (ex.: credencial de integração externa futura), via **task role**, com refresh framework-agnóstico (driver wrapper ou sidecar/ESO) — nunca `@RefreshScope`.
+   - Nada em texto puro no código ou em variável de ambiente versionada.
 
 4. **Criptografia**
-   - **Em trânsito:** TLS 1.2+ (mTLS na comunicação serviço→MSK, quando aplicável).
-   - **Em repouso:** criptografia ativada no banco (Aurora/RDS) e no Kafka, com KMS para gestão de chaves.
+   - **Em trânsito:** TLS 1.2+ em todo o tráfego — borda HTTPS, serviço→RDS (SSL), serviço→MSK (TLS).
+   - **mTLS — não adotado** (substituído por IAM + `api_key`):
+     1. **Sobreposição de identidade:** o mTLS garante que a máquina "A" é a máquina "A"; se `api_key` + IAM já validam com segurança que a requisição vem de um cliente autorizado, o mTLS se torna uma camada redundante de autenticação.
+     2. **Custo operacional:** manter mTLS exige gerenciar o ciclo de vida de certificados (que expiram e podem derrubar o ambiente se não renovados); se IAM + `api_key` já resolvem o problema de segurança com menos esforço, opta-se pela simplicidade.
+     3. **Falta de granularidade do TLS puro:** o mTLS diz qual máquina está conectando, mas não entende nativamente regras de negócio (ex.: "esta chave só pode acessar a rota `/lancamentos` via método POST"); o IAM é desenhado especificamente para esse tipo de política granular.
+   - **Em repouso:** criptografia ativada no banco (Aurora/RDS) e no Kafka (MSK), com **KMS (Key Management Service)** para gestão de chaves.
 
 Justificativa: o API Gateway + WAF atendem diretamente a "proteção ativa contra ataques"; o Secrets Manager elimina credencial hardcoded; o refresh token rotativo resolve o ponto de "persistência de autenticação/criptografia". Tudo é gerenciado na AWS, alinhado ao restante da solução.
 

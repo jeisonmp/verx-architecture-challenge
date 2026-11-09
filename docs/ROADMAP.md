@@ -7,18 +7,18 @@
 ## Estado atual (2026-11-09)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
-- ✅ ADRs 0001..0010 registrados — **todos accepted**.
+- ✅ ADRs 0001..0011 registrados — **todos accepted**.
 - ✅ Norma de branches/versionamento (`GITFLOW.md`) + base de release (`release.yml`, semantic-release — estágio §3 da ADR-0005).
 - ✅ `README.md` populado (execução local + validação manual).
 - ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ e ator `cliente` (camada UI/Cliente) adicionados às visões L1/L2.
 - ⏳ Docs em esqueleto (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
-- ⏳ ADRs em aberto: observabilidade (0011), IaC/FinOps (0012).
+- ⏳ ADR em aberto: IaC/FinOps (0012).
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
 O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem correta: **decidir (ADR) → desenhar (C4) → narrar (docs)**.
 
-1. **Fechar os ADRs em aberto** — observabilidade (0011) e IaC/FinOps (0012), além da regra anti-monólito distribuído.
+1. **Fechar os ADRs em aberto** — IaC/FinOps (0012), além da regra anti-monólito distribuído.
 2. **Popular as docs obrigatórias** — `BUSINESS.md` (domínios/capacidades), `GLOSSARY.md`, `ARCHITECTURE.md` (arquitetura-alvo).
 
 > Sprints 1+ (código, testes, IaC, FinOps) começam depois de congelado o Sprint 0.
@@ -35,7 +35,7 @@ O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem
 | Banco de dados | PostgreSQL (escrita + projeção de leitura) | ✅ ADR-0004 (accepted) |
 | Orquestração | ECS Fargate (sem EKS pré-existente) | ✅ ADR-0010 (accepted) |
 | Segurança | API Gateway + WAF + Cognito + Secrets Manager/IAM (passwordless) + refresh tokens | ✅ ADR-0007 (accepted) |
-| Observabilidade | Structured logging (JSON) + métricas + tracing | a decidir (ADR-0011) |
+| Observabilidade | Structured logging (JSON) + CloudWatch + tracing X-Ray (ADOT) | ✅ ADR-0011 (accepted) |
 | FinOps | AWS Pricing Calculator (estimativa mensal) | a decidir (ADR-0012) |
 | Documentação | C4 (Structurizr) + ADRs (MADR) | ✅ em curso |
 
@@ -55,10 +55,10 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - [x] ADR-0008 — Vert.x vs Spring Boot (Spring Boot mantido; Vert.x descartado) — **accepted**
 - [x] ADR-0009 — Consultar a doc oficial do Structurizr antes de alterar o modelo C4 — **accepted**
 - [x] ADR-0010 — Orquestração (ECS Fargate vs EKS) — **accepted**
+- [x] ADR-0011 — Observabilidade (logs JSON + métricas CloudWatch + tracing X-Ray/ADOT) — **accepted**
 
 **Decisões pendentes (pré-requisito do C4/docs)**
 
-- [ ] ADR-0011 — Observabilidade (structured logging JSON + métricas + tracing)
 - [ ] ADR-0012 — IaC Terraform + FinOps (estimativa AWS Pricing Calculator)
 - [ ] Regra anti-monólito distribuído (sem libs compartilhadas A↔B)
 
@@ -78,6 +78,7 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - ADR-0010 (orquestração) define ECS Fargate + task role (integração com ADR-0007).
 - `release.yml` (estágio §3 — release) depende de ADR-0005 + `GITFLOW.md`; §1/§2 (SAST/SCA, testes+cobertura) ficam para o Sprint 1.
 - `workspace.dsl` desenha as decisões de ADR-0002/0003/0004/0006/0007/0010.
+- ADR-0011 (observabilidade) usa a stack AWS da ADR-0007/0010 — CloudWatch + X-Ray/ADOT, sem infra extra.
 
 ## Sprint 1 — Fundação e Ambiente
 

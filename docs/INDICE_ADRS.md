@@ -12,3 +12,4 @@
 | 0008 | [Vert.x vs Spring Boot — o que muda no contexto Outbox/Inbox](adrs/0008-vertx-vs-spring-boot.md) | accepted | 2026-11-05 |
 | 0009 | [Consultar a documentação oficial do Structurizr antes de qualquer alteração no modelo C4](adrs/0009-consultar-documentacao-oficial-structurizr.md) | accepted | 2026-11-06 |
 | 0010 | [Orquestração dos microsserviços — ECS Fargate vs EKS](adrs/0010-orquestracao-ecs-fargate-vs-eks.md) | accepted | 2026-11-09 |
+| 0011 | [Observabilidade — logs JSON, métricas CloudWatch e tracing X-Ray (ADOT)](adrs/0011-observabilidade-logs-metricas-tracing.md) | accepted | 2026-11-09 |

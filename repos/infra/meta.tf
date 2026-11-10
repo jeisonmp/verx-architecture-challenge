@@ -19,6 +19,7 @@ locals {
   rds_backup_retention     = local.env.rds.backup_retention_days
   rds_skip_final_snapshot  = local.env.rds.skip_final_snapshot
   rds_stop_start           = local.env.rds.stop_start # ADR-0014 — stop/start 10h/dia (dev)
+  nat_stop_start           = local.env.nat.stop_start # ADR-0014 — stop/start 10h/dia (dev)
 
   # ECS (ADR-0010)
   ecs_container_insights = local.env.ecs.container_insights

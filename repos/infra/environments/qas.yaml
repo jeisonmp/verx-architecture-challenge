@@ -11,6 +11,8 @@ rds:
   backup_retention_days: 14
   skip_final_snapshot: true
   stop_start: false
+nat:
+  stop_start: false
 ecs:
   container_insights: true
 logs:

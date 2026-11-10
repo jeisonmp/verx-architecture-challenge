@@ -85,9 +85,9 @@ resource "aws_security_group" "msk" {
 # de NAT Gateway (~US$ 32/mês) — regra FinOps do motor (§6.3). Single point of
 # failure aceitável em dev.
 #
-# Nota FinOps: t3.micro free tier = 750h/mês por 12 meses. Após o período,
-# 24/7 ≈ US$ 7,50/mês — para manter o alvo, aplicar stop/start fora da janela
-# do Fargate (8h/dia), reutilizando o padrão do rds_scheduler.tf (ADR-0014).
+# Nota FinOps: on-demand 10h/dia (300h/mês < 750h free tier = US$ 0 por 12
+# meses; após ≈ US$ 3,16/mês). Spot descartado (reclaim de ~2min derrubaria o
+# egress). Janela alinhada ao RDS 10h/dia (rds_scheduler.tf, ADR-0014).
 # ===========================================================================
 
 data "aws_ssm_parameter" "nat_ami" {
@@ -129,7 +129,7 @@ resource "aws_route_table" "private" {
 
   route {
     cidr_block           = "0.0.0.0/0"
-    network_interface_id = aws_instance.nat.primary_network_interface_id
+    network_interface_id = aws_network_interface.nat.id
   }
 
   tags = { Name = "fluxo-caixa-private-${var.environment}" }
@@ -162,6 +162,15 @@ resource "aws_security_group" "nat" {
   tags = { Name = "fluxo-caixa-nat-${var.environment}" }
 }
 
+resource "aws_network_interface" "nat" {
+  subnet_id         = aws_subnet.public.id
+  private_ips       = ["10.0.0.10"] # IP privado fixo — sobrevive ao stop/start da NAT
+  security_groups   = [aws_security_group.nat.id]
+  source_dest_check = false         # habilita o forwarding (SNAT) — essencial para NAT
+
+  tags = { Name = "fluxo-caixa-nat-eni-${var.environment}" }
+}
+
 resource "aws_eip" "nat" {
   domain = "vpc"
 
@@ -169,32 +178,35 @@ resource "aws_eip" "nat" {
 }
 
 resource "aws_instance" "nat" {
-  ami                    = data.aws_ssm_parameter.nat_ami.value
-  instance_type          = "t3.micro"
-  subnet_id              = aws_subnet.public.id
-  vpc_security_group_ids = [aws_security_group.nat.id]
-  source_dest_check      = false # habilita o forwarding (SNAT) — essencial para NAT
+  ami           = data.aws_ssm_parameter.nat_ami.value
+  instance_type = "t3.micro"
+
+  network_interface {
+    network_interface_id = aws_network_interface.nat.id
+    device_index         = 0 # ENI primária fixa — sobrevive ao stop/start
+  }
 
   root_block_device {
     encrypted  = true
     kms_key_id = aws_kms_key.main.arn
   }
 
+  # cloud-config: `bootcmd` roda a CADA boot (não só no 1º) — essencial para o
+  # stop/start da NAT reaplicar forwarding + masquerade após cada reboot.
   user_data = <<-EOF
-    #!/bin/bash
-    set -euxo pipefail
-    # NAT instance: IP forwarding + masquerade para as sub-redes privadas
-    sysctl -w net.ipv4.ip_forward=1
-    echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-nat.conf
-    iptables -t nat -A POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE
+    #cloud-config
+    bootcmd:
+      - echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/99-nat.conf
+      - sysctl -w net.ipv4.ip_forward=1
+      - iptables -t nat -C POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE || iptables -t nat -A POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE
   EOF
 
   tags = { Name = "fluxo-caixa-nat-${var.environment}" }
 }
 
 resource "aws_eip_association" "nat" {
-  allocation_id = aws_eip.nat.id
-  instance_id   = aws_instance.nat.id
+  allocation_id        = aws_eip.nat.id
+  network_interface_id = aws_network_interface.nat.id
 }
 
 # ===========================================================================

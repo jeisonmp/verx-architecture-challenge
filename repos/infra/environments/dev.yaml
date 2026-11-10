@@ -11,6 +11,8 @@ rds:
   backup_retention_days: 7
   skip_final_snapshot: true
   stop_start: true              # stop/start 10h/dia (ADR-0014)
+nat:
+  stop_start: true              # stop/start 10h/dia (ADR-0014) — janela do Fargate
 ecs:
   container_insights: false
 logs:

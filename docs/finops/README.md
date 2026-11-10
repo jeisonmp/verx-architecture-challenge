@@ -4,9 +4,7 @@
 
 ## Link oficial (AWS Pricing Calculator)
 
-> ⚠️ **PENDENTE** — gerar na ferramenta oficial e colar o link aqui:
->
-> `https://calculator.aws/#/estimate?id=<ESTIMATE_ID>`
+> [Abrir estimativa no AWS Pricing Calculator](https://calculator.aws/#/estimate?id=9ec6a0d577dd2e6024b889dd076c5f5a88016018)
 >
 > O CSV exportado da ferramenta oficial está versionado como `estimativa-aws-oficial.csv`.
 

@@ -4,7 +4,7 @@
 # No part of this software may be reproduced, distributed, or transmitted
 # in any form or by any means without express written permission.
 
-"""NAT Instance stop/start — dev 10h/dia (ADR-0014).
+"""NAT Instance stop/start — dev 10h/dia (ADR-0016).
 
 Acionado por EventBridge (cron). O evento informa `action` = "start" | "stop".
 A instância alvo vem da variável de ambiente NAT_INSTANCE_ID.

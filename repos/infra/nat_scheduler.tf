@@ -5,7 +5,7 @@
 # in any form or by any means without express written permission.
 
 # ===========================================================================
-# NAT Instance stop/start — dev 10h/dia (ADR-0014)
+# NAT Instance stop/start — dev 10h/dia (ADR-0016)
 #
 # Para a NAT Instance fora do horário de uso (FinOps). Janela idêntica ao RDS
 # (08:00–18:00 America/Sao_Paulo, UTC-3), superconjunto do Fargate (8h/dia).
@@ -88,7 +88,7 @@ resource "aws_cloudwatch_event_rule" "nat_start" {
   count = local.nat_stop_start ? 1 : 0
 
   name                = "fluxo-caixa-nat-start-${local.environment}"
-  description         = "Inicia a NAT Instance às 08:00 BRT (11:00 UTC) — janela dev 10h/dia (ADR-0014)"
+  description         = "Inicia a NAT Instance às 08:00 BRT (11:00 UTC) — janela dev 10h/dia (ADR-0016)"
   schedule_expression = "cron(0 11 * * ? *)"
 }
 
@@ -116,7 +116,7 @@ resource "aws_cloudwatch_event_rule" "nat_stop" {
   count = local.nat_stop_start ? 1 : 0
 
   name                = "fluxo-caixa-nat-stop-${local.environment}"
-  description         = "Para a NAT Instance às 18:00 BRT (21:00 UTC) — janela dev 10h/dia (ADR-0014)"
+  description         = "Para a NAT Instance às 18:00 BRT (21:00 UTC) — janela dev 10h/dia (ADR-0016)"
   schedule_expression = "cron(0 21 * * ? *)"
 }
 

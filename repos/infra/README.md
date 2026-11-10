@@ -8,8 +8,8 @@
 
 ```
 repos/
-├── servico-a/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
-├── servico-b/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
+├── lancamentos/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
+├── consolidado/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
 └── infra/       # IaC (Terraform) — declarado, sem apply
     ├── README.md
     ├── backend.tf     # state remoto S3 + locking nativo (use_lockfile = true) + workspace_key_prefix
@@ -18,7 +18,7 @@ repos/
     ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
     ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
     ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
-    ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
+    ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0016)
     ├── lambda/rds_scheduler/  # código Python do stop/start
     ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
     └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
@@ -49,7 +49,7 @@ A visão C4 de deployment está no `workspace.dsl` (`deployment * aws`). Estrutu
   - RDS `db.t4g.micro` single-AZ (sem Multi-AZ / Performance Insights);
   - RDS stop/start 10h/dia em dev (`rds_scheduler.tf` — EventBridge + Lambda, ADR-0014);
   - MSK Serverless (sem custo de cluster fixo);
-  - egress = **NAT Instance `t3.micro`** on-demand 10h/dia (US$ 3,16/mês; US$ 0 no free tier) declarada no `main.tf`, sem NAT Gateway — stop/start 10h/dia via `nat_scheduler.tf` (ADR-0014);
+  - egress = **NAT Instance `t3.micro`** on-demand 10h/dia (US$ 3,16/mês; US$ 0 no free tier) declarada no `main.tf`, sem NAT Gateway — stop/start 10h/dia via `nat_scheduler.tf` (ADR-0016);
   - **WAF apenas em produção**; `dev`/`qas` acessados por notebook via VPN (VPC);
   - sem Container Insights / CloudFront / Multi-AZ em dev.
 

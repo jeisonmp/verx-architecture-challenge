@@ -87,7 +87,8 @@ resource "aws_security_group" "msk" {
 #
 # Nota FinOps: on-demand 10h/dia (300h/mês < 750h free tier = US$ 0 por 12
 # meses; após ≈ US$ 3,16/mês). Spot descartado (reclaim de ~2min derrubaria o
-# egress). Janela alinhada ao RDS 10h/dia (rds_scheduler.tf, ADR-0014).
+# egress). Janela alinhada ao RDS 10h/dia (rds_scheduler.tf, ADR-0014); o
+# stop/start da própria NAT é a ADR-0016 (nat_scheduler.tf).
 # ===========================================================================
 
 data "aws_ssm_parameter" "nat_ami" {

@@ -4,7 +4,7 @@
 > Fonte macro de planejamento. Decisões consolidadas viram ADRs em `docs/adrs/`.
 > Modelo C4 (Contexto + Container) mantido no Structurizr (`workspace.dsl`).
 
-## Estado atual (2026-11-09)
+## Estado atual (2026-11-10)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
 - ✅ ADRs 0001..0014 registrados — **todos accepted**.
@@ -12,14 +12,13 @@
 - ✅ `README.md` populado (execução local + validação manual).
 - ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e view de **deployment (infra AWS)** — visões L1/L2/L3.
 - ⏳ Docs em esqueleto (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
-- ⏳ Pendência: regra anti-monólito distribuído (sem lib compartilhada A↔B).
+- ✅ Regra anti-monólito distribuído fechada — ADR-0015 (accepted).
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
 O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem correta: **decidir (ADR) → desenhar (C4) → narrar (docs)**.
 
-1. **Fechar a regra anti-monólito distribuído** — sem libs compartilhadas A↔B (última pendência do Sprint 0).
-2. **Popular as docs obrigatórias** — `BUSINESS.md` (domínios/capacidades), `GLOSSARY.md`, `ARCHITECTURE.md` (arquitetura-alvo).
+1. **Popular as docs obrigatórias** — `BUSINESS.md` (domínios/capacidades), `GLOSSARY.md`, `ARCHITECTURE.md` (arquitetura-alvo).
 
 > Sprints 1+ (código, testes, IaC, FinOps) começam depois de congelado o Sprint 0.
 
@@ -59,10 +58,7 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - [x] ADR-0012 — IaC Terraform + FinOps (infra declarada em .tf, sem apply) — **accepted**
 - [x] ADR-0013 — Instância RDS única (schemas por serviço) em dev — **accepted**
 - [x] ADR-0014 — FinOps do barramento e do RDS em dev (MSK pay-per-use, MSK Connect rejeitado, RDS 10h/dia) — **accepted**
-
-**Decisões pendentes (pré-requisito do C4/docs)**
-
-- [ ] Regra anti-monólito distribuído (sem libs compartilhadas A↔B)
+- [x] ADR-0015 — Regra anti-monólito distribuído (sem libs compartilhadas A↔B) — **accepted**
 
 **Documentação C4 + docs (após as decisões)**
 
@@ -107,6 +103,7 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 
 - Monorepo (estrutura dos microsserviços A e B)
 - CI no GitHub Actions (implementação dos estágios §1/§2 da ADR-0005 — SAST/SCA, testes+cobertura; base de release já em `release.yml`)
+- Contrato do evento A↔B como teste executável: **CDC — Consumer-Driven Contracts** via Spring Cloud Contract, com `schemaVersion` obrigatório como asserção (ADR-0015)
 - docker-compose completo (Kafka/MSK, PostgreSQL, apps)
 - Health checks + structured logging (JSON)
 - IaC baseline (VPC, rede, recursos base)

@@ -1,0 +1,46 @@
+Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39).
+All rights reserved.
+
+PROPRIETARY AND CONFIDENTIAL — FLUXO DE CAIXA (CQRS)
+
+This software, including all source code, event schemas, Transactional
+Outbox/Inbox workflows, and CQRS read/write projections,
+is the exclusive property of MAX JEISON PRASS TECNOLOGIA LTDA and is
+protected under Brazilian Law No. 9.609/98 (Software Protection),
+Law No. 9.610/98 (Copyright), and Law No. 9.279/96 (Industrial Property).
+
+1. GRANT OF RIGHTS
+   No rights are granted to any person or entity. This software is provided
+   solely for internal use and for authorized consumers under a valid service
+   agreement. No license, express or implied, is granted to any third party.
+
+2. POWERED BY BACKFOREND — DEPENDENCY CLAUSE
+   This software is built upon, incorporates, or was constructed using the
+   Backforend proprietary AI-driven development framework and engine. All
+   trade secrets, custom AI prompts, automated code-generation logic, workflow
+   orchestrators, and proprietary development patterns contained in the
+   Backforend engine remain the exclusive intellectual property of
+   MAX JEISON PRASS TECNOLOGIA LTDA. Use of this software does not grant any
+   rights, title, or interest in the Backforend engine or its underlying
+   technology.
+
+3. PROHIBITED ACTIVITIES
+   Without prior written authorization from the copyright holder, you may NOT:
+   (a) copy, reproduce, distribute, publish, display, perform, or transmit
+       any part of this software;
+   (b) decompile, reverse-engineer, disassemble, or attempt to derive the
+       source code, algorithms, or trade secrets embodied in this software;
+   (c) create derivative works based on this software or its event schemas,
+       Transactional Outbox/Inbox workflows, and CQRS read/write projections;
+   (d) remove or alter any proprietary notices, labels, or marks.
+
+4. TRADE-SECRET PROTECTION
+   This software contains commercially valuable trade secrets. Unauthorized
+   disclosure, use, or misappropriation may give rise to civil and criminal
+   liability under Brazilian Law No. 9.279/96.
+
+5. GOVERNING LAW
+   This notice is governed by the laws of the Federative Republic of Brazil.
+
+6. CONTACT
+   For licensing inquiries: maxjeison@gmail.com

@@ -18,7 +18,9 @@ repos/
     ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
     ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
     ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
+    ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
     ├── lambda/rds_scheduler/  # código Python do stop/start
+    ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
     └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
 ```
 
@@ -47,7 +49,7 @@ A visão C4 de deployment está no `workspace.dsl` (`deployment * aws`). Estrutu
   - RDS `db.t4g.micro` single-AZ (sem Multi-AZ / Performance Insights);
   - RDS stop/start 10h/dia em dev (`rds_scheduler.tf` — EventBridge + Lambda, ADR-0014);
   - MSK Serverless (sem custo de cluster fixo);
-  - egress = **NAT Instance `t3.micro`** (free tier 12m) declarada no `main.tf`, sem NAT Gateway — pós-free-tier 24/7 ≈ US$ 7,50/mês (stop/start fora da janela Fargate, se necessário);
+  - egress = **NAT Instance `t3.micro`** on-demand 10h/dia (US$ 3,16/mês; US$ 0 no free tier) declarada no `main.tf`, sem NAT Gateway — stop/start 10h/dia via `nat_scheduler.tf` (ADR-0014);
   - **WAF apenas em produção**; `dev`/`qas` acessados por notebook via VPN (VPC);
   - sem Container Insights / CloudFront / Multi-AZ em dev.
 

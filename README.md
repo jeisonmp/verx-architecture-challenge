@@ -10,7 +10,7 @@ Sistema de fluxo de caixa com desacoplamento entre escrita e leitura via CQRS, m
 | **Kafka (MSK Serverless)** | Barramento de eventos (escrita → leitura) | — |
 | **CashFlow · Consolidado** (B) | Leitura — Inbox + projeção, `GET /consolidado` (50 req/s) | Java 21 · Spring Boot 3 · PostgreSQL |
 
-Decisões em `docs/adrs/` · modelo C4 em `docs/workspace.dsl` (Structurizr) · planejamento em `docs/ROADMAP.md`.
+Decisões em `docs/adrs/` · modelo C4 em `workspace.dsl` (Structurizr) · planejamento em `docs/ROADMAP.md`.
 
 ## Execução local
 
@@ -75,5 +75,5 @@ Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no
 ## Documentação
 
 - `docs/adrs/` — decisões de arquitetura (MADR)
-- `docs/workspace.dsl` — modelo C4
+- `workspace.dsl` — modelo C4
 - `docs/ROADMAP.md` — planejamento

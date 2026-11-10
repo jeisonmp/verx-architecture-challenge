@@ -24,7 +24,7 @@ data "archive_file" "rds_scheduler" {
 resource "aws_iam_role" "rds_scheduler" {
   count = local.rds_stop_start ? 1 : 0
 
-  name = "fluxo-caixa-rds-scheduler-${var.environment}"
+  name = "fluxo-caixa-rds-scheduler-${local.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -63,7 +63,7 @@ resource "aws_iam_role_policy" "rds_scheduler" {
 resource "aws_lambda_function" "rds_scheduler" {
   count = local.rds_stop_start ? 1 : 0
 
-  function_name = "fluxo-caixa-rds-scheduler-${var.environment}"
+  function_name = "fluxo-caixa-rds-scheduler-${local.environment}"
   role          = aws_iam_role.rds_scheduler[0].arn
   handler       = "index.handler"
   runtime       = "python3.12"
@@ -83,7 +83,7 @@ resource "aws_lambda_function" "rds_scheduler" {
 resource "aws_cloudwatch_event_rule" "rds_start" {
   count = local.rds_stop_start ? 1 : 0
 
-  name                = "fluxo-caixa-rds-start-${var.environment}"
+  name                = "fluxo-caixa-rds-start-${local.environment}"
   description         = "Inicia o RDS às 08:00 BRT (11:00 UTC) — janela dev 10h/dia (ADR-0014)"
   schedule_expression = "cron(0 11 * * ? *)"
 }
@@ -111,7 +111,7 @@ resource "aws_lambda_permission" "rds_start" {
 resource "aws_cloudwatch_event_rule" "rds_stop" {
   count = local.rds_stop_start ? 1 : 0
 
-  name                = "fluxo-caixa-rds-stop-${var.environment}"
+  name                = "fluxo-caixa-rds-stop-${local.environment}"
   description         = "Para o RDS às 18:00 BRT (21:00 UTC) — janela dev 10h/dia (ADR-0014)"
   schedule_expression = "cron(0 21 * * ? *)"
 }

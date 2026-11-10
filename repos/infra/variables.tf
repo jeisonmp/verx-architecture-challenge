@@ -10,16 +10,6 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "environment" {
-  description = "Ambiente (dev / qas / prd) — seleciona environments/<env>.yaml"
-  type        = string
-
-  validation {
-    condition     = contains(["dev", "qas", "prd"], var.environment)
-    error_message = "environment deve ser dev, qas ou prd."
-  }
-}
-
 variable "db_password" {
   description = "Senha master do RDS — injetada via Secrets Manager na implantação (ADR-0007)"
   type        = string

@@ -28,7 +28,7 @@ data "archive_file" "nat_scheduler" {
 resource "aws_iam_role" "nat_scheduler" {
   count = local.nat_stop_start ? 1 : 0
 
-  name = "fluxo-caixa-nat-scheduler-${var.environment}"
+  name = "fluxo-caixa-nat-scheduler-${local.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -67,7 +67,7 @@ resource "aws_iam_role_policy" "nat_scheduler" {
 resource "aws_lambda_function" "nat_scheduler" {
   count = local.nat_stop_start ? 1 : 0
 
-  function_name = "fluxo-caixa-nat-scheduler-${var.environment}"
+  function_name = "fluxo-caixa-nat-scheduler-${local.environment}"
   role          = aws_iam_role.nat_scheduler[0].arn
   handler       = "index.handler"
   runtime       = "python3.12"
@@ -87,7 +87,7 @@ resource "aws_lambda_function" "nat_scheduler" {
 resource "aws_cloudwatch_event_rule" "nat_start" {
   count = local.nat_stop_start ? 1 : 0
 
-  name                = "fluxo-caixa-nat-start-${var.environment}"
+  name                = "fluxo-caixa-nat-start-${local.environment}"
   description         = "Inicia a NAT Instance às 08:00 BRT (11:00 UTC) — janela dev 10h/dia (ADR-0014)"
   schedule_expression = "cron(0 11 * * ? *)"
 }
@@ -115,7 +115,7 @@ resource "aws_lambda_permission" "nat_start" {
 resource "aws_cloudwatch_event_rule" "nat_stop" {
   count = local.nat_stop_start ? 1 : 0
 
-  name                = "fluxo-caixa-nat-stop-${var.environment}"
+  name                = "fluxo-caixa-nat-stop-${local.environment}"
   description         = "Para a NAT Instance às 18:00 BRT (21:00 UTC) — janela dev 10h/dia (ADR-0014)"
   schedule_expression = "cron(0 21 * * ? *)"
 }

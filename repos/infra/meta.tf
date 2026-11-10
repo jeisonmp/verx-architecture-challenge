@@ -11,7 +11,12 @@
 # Um arquivo por ambiente; o topo do YAML é a config daquele env.
 # ---------------------------------------------------------------------------
 locals {
-  env = yamldecode(file("${path.module}/environments/${var.environment}.yaml"))
+  # Fonte única do ambiente = workspace ativo (dev/qas/prd), isolado via
+  # workspace_key_prefix = "env" no backend.tf. Workspace fora de {dev,qas,prd}
+  # falha no file() abaixo (environments/<ws>.yaml não existe).
+  environment = terraform.workspace
+
+  env = yamldecode(file("${path.module}/environments/${local.environment}.yaml"))
 
   # RDS (ADR-0004) — flags FinOps que variam por ambiente
   rds_multi_az             = local.env.rds.multi_az

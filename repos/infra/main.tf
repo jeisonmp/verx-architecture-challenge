@@ -16,7 +16,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = { Name = "fluxo-caixa-${var.environment}" }
+  tags = { Name = "fluxo-caixa-${local.environment}" }
 }
 
 resource "aws_subnet" "private" {
@@ -29,7 +29,7 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_security_group" "app" {
-  name   = "fluxo-caixa-app-${var.environment}"
+  name   = "fluxo-caixa-app-${local.environment}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -46,11 +46,11 @@ resource "aws_security_group" "app" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "fluxo-caixa-app-${var.environment}" }
+  tags = { Name = "fluxo-caixa-app-${local.environment}" }
 }
 
 resource "aws_security_group" "rds" {
-  name   = "fluxo-caixa-rds-${var.environment}"
+  name   = "fluxo-caixa-rds-${local.environment}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -60,11 +60,11 @@ resource "aws_security_group" "rds" {
     security_groups = [aws_security_group.app.id]
   }
 
-  tags = { Name = "fluxo-caixa-rds-${var.environment}" }
+  tags = { Name = "fluxo-caixa-rds-${local.environment}" }
 }
 
 resource "aws_security_group" "msk" {
-  name   = "fluxo-caixa-msk-${var.environment}"
+  name   = "fluxo-caixa-msk-${local.environment}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -74,7 +74,7 @@ resource "aws_security_group" "msk" {
     security_groups = [aws_security_group.app.id]
   }
 
-  tags = { Name = "fluxo-caixa-msk-${var.environment}" }
+  tags = { Name = "fluxo-caixa-msk-${local.environment}" }
 }
 
 # ===========================================================================
@@ -97,7 +97,7 @@ data "aws_ssm_parameter" "nat_ami" {
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
-  tags = { Name = "fluxo-caixa-igw-${var.environment}" }
+  tags = { Name = "fluxo-caixa-igw-${local.environment}" }
 }
 
 resource "aws_subnet" "public" {
@@ -116,7 +116,7 @@ resource "aws_route_table" "public" {
     gateway_id = aws_internet_gateway.main.id
   }
 
-  tags = { Name = "fluxo-caixa-public-${var.environment}" }
+  tags = { Name = "fluxo-caixa-public-${local.environment}" }
 }
 
 resource "aws_route_table_association" "public" {
@@ -132,7 +132,7 @@ resource "aws_route_table" "private" {
     network_interface_id = aws_network_interface.nat.id
   }
 
-  tags = { Name = "fluxo-caixa-private-${var.environment}" }
+  tags = { Name = "fluxo-caixa-private-${local.environment}" }
 }
 
 resource "aws_route_table_association" "private" {
@@ -142,7 +142,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "nat" {
-  name   = "fluxo-caixa-nat-${var.environment}"
+  name   = "fluxo-caixa-nat-${local.environment}"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -159,7 +159,7 @@ resource "aws_security_group" "nat" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = { Name = "fluxo-caixa-nat-${var.environment}" }
+  tags = { Name = "fluxo-caixa-nat-${local.environment}" }
 }
 
 resource "aws_network_interface" "nat" {
@@ -168,13 +168,13 @@ resource "aws_network_interface" "nat" {
   security_groups   = [aws_security_group.nat.id]
   source_dest_check = false         # habilita o forwarding (SNAT) — essencial para NAT
 
-  tags = { Name = "fluxo-caixa-nat-eni-${var.environment}" }
+  tags = { Name = "fluxo-caixa-nat-eni-${local.environment}" }
 }
 
 resource "aws_eip" "nat" {
   domain = "vpc"
 
-  tags = { Name = "fluxo-caixa-nat-eip-${var.environment}" }
+  tags = { Name = "fluxo-caixa-nat-eip-${local.environment}" }
 }
 
 resource "aws_instance" "nat" {
@@ -201,7 +201,7 @@ resource "aws_instance" "nat" {
       - iptables -t nat -C POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE || iptables -t nat -A POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE
   EOF
 
-  tags = { Name = "fluxo-caixa-nat-${var.environment}" }
+  tags = { Name = "fluxo-caixa-nat-${local.environment}" }
 }
 
 resource "aws_eip_association" "nat" {
@@ -228,14 +228,14 @@ resource "aws_kms_key" "main" {
 # isolamento de falha real exigirem. Schemas/roles criados via Flyway (ADR-0004).
 # ===========================================================================
 resource "aws_db_subnet_group" "main" {
-  name       = "fluxo-caixa-${var.environment}"
+  name       = "fluxo-caixa-${local.environment}"
   subnet_ids = aws_subnet.private[*].id
 
-  tags = { Name = "fluxo-caixa-${var.environment}" }
+  tags = { Name = "fluxo-caixa-${local.environment}" }
 }
 
 resource "aws_db_instance" "cashflow" {
-  identifier     = "fluxo-caixa-${var.environment}"
+  identifier     = "fluxo-caixa-${local.environment}"
   engine         = "postgres"
   engine_version = "16.3"
   instance_class = var.rds_instance_class
@@ -258,14 +258,14 @@ resource "aws_db_instance" "cashflow" {
   skip_final_snapshot         = local.rds_skip_final_snapshot
   performance_insights_enabled = local.rds_performance_insights
 
-  tags = { Name = "fluxo-caixa-${var.environment}" }
+  tags = { Name = "fluxo-caixa-${local.environment}" }
 }
 
 # ===========================================================================
 # Mensageria — MSK Serverless (ADR-0003) com IAM auth (ADR-0007)
 # ===========================================================================
 resource "aws_msk_serverlesscluster" "kafka" {
-  cluster_name = "fluxo-caixa-${var.environment}"
+  cluster_name = "fluxo-caixa-${local.environment}"
 
   vpc_configs {
     subnet_ids         = aws_subnet.private[*].id
@@ -282,14 +282,14 @@ resource "aws_msk_serverlesscluster" "kafka" {
 
   # Em repouso: MSK Serverless usa KMS por padrão (ADR-0007).
 
-  tags = { Name = "fluxo-caixa-${var.environment}" }
+  tags = { Name = "fluxo-caixa-${local.environment}" }
 }
 
 # ===========================================================================
 # ECS Fargate (ADR-0010) — cluster + IAM + tasks/services (A e B)
 # ===========================================================================
 resource "aws_ecs_cluster" "main" {
-  name = "fluxo-caixa-${var.environment}"
+  name = "fluxo-caixa-${local.environment}"
 
   setting {
     name  = "containerInsights"
@@ -298,12 +298,12 @@ resource "aws_ecs_cluster" "main" {
 }
 
 resource "aws_cloudwatch_log_group" "app" {
-  name              = "/ecs/fluxo-caixa-${var.environment}"
+  name              = "/ecs/fluxo-caixa-${local.environment}"
   retention_in_days = local.log_retention_days
 }
 
 resource "aws_iam_role" "ecs_execution" {
-  name = "fluxo-caixa-execution-${var.environment}"
+  name = "fluxo-caixa-execution-${local.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -321,7 +321,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution" {
 }
 
 resource "aws_iam_role" "ecs_task" {
-  name = "fluxo-caixa-task-${var.environment}"
+  name = "fluxo-caixa-task-${local.environment}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -425,7 +425,7 @@ resource "aws_ecs_service" "lancamentos" {
     assign_public_ip = false
   }
 
-  tags = { Name = "fluxo-caixa-lancamentos-${var.environment}" }
+  tags = { Name = "fluxo-caixa-lancamentos-${local.environment}" }
 }
 
 resource "aws_ecs_service" "consolidado" {
@@ -441,5 +441,5 @@ resource "aws_ecs_service" "consolidado" {
     assign_public_ip = false
   }
 
-  tags = { Name = "fluxo-caixa-consolidado-${var.environment}" }
+  tags = { Name = "fluxo-caixa-consolidado-${local.environment}" }
 }

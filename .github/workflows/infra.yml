@@ -1,0 +1,61 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# ADR-0005 §3 + ADR-0012 dec4 — validação estática de IaC (sem apply).
+# Roda `terraform fmt/validate` + tfsec + checkov sobre repos/infra.
+# NÃO usa credencial AWS: `terraform init -backend=false` + scanners estáticos.
+# (O step OIDC para plan/apply está documentado em repos/infra/README.md —
+#  entra quando houver conta real. Ver §Bootstrap.)
+
+name: infra
+
+on:
+  push:
+    branches: [master, dev]
+    paths:
+      - "repos/infra/**"
+  pull_request:
+    paths:
+      - "repos/infra/**"
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: repos/infra
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform (>= 1.10 — use_lockfile)
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ">= 1.10"
+
+      - name: Format check
+        run: terraform fmt -check -recursive
+
+      - name: Init (sem backend — sem credencial AWS)
+        run: terraform init -backend=false
+
+      - name: Validate
+        run: terraform validate
+
+      - name: tfsec (SAST de IaC)
+        uses: aquasecurity/tfsec-action@v1
+        with:
+          working_directory: repos/infra
+
+      - name: checkov (compliance de IaC)
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: repos/infra
+          framework: terraform

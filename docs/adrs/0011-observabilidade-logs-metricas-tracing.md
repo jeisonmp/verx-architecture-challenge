@@ -7,7 +7,7 @@ decision-makers: Max
 
 ## Contexto e problema
 
-Os dois microsserviços (Lançamentos e Consolidado) precisam de observabilidade ponta a ponta — logs, métricas e tracing — **atravessando o barramento Kafka** (A → B). O motor (`AGENTS.md` §2) manda *structured logging* em JSON com correlation IDs, e §2.1 (LGPD) proíbe expor tokens/`x-api-key`/body em logs de produção. Precisamos definir o stack sem adicionar infra pesada (FinOps) e coerente com a stack AWS já decidida (ADR-0007, ADR-0010).
+Os dois microsserviços (Lançamentos e Consolidado) precisam de observabilidade ponta a ponta — logs, métricas e tracing — **atravessando o barramento Kafka** (A → B). O padrão do projeto exige *structured logging* em JSON com correlation IDs, e a LGPD proíbe expor tokens/`x-api-key`/body em logs de produção. Precisamos definir o stack sem adicionar infra pesada (FinOps) e coerente com a stack AWS já decidida (ADR-0007, ADR-0010).
 
 ## Alternativas consideradas
 
@@ -36,7 +36,7 @@ Os dois microsserviços (Lançamentos e Consolidado) precisam de observabilidade
 
 ### Q5 — LGPD/redação nos logs?
 
-**R:** Sim — `Authorization`/`x-api-key`/tokens nunca em log; sem body-trace em `prd` (§2.1 do `AGENTS.md`).
+**R:** Sim — `Authorization`/`x-api-key`/tokens nunca em log; sem body-trace em `prd`.
 
 ## Critérios de decisão
 
@@ -70,7 +70,7 @@ Evitar o **OpenTelemetry puro** (Collector + Prometheus + Jaeger próprios) elim
 * Bom, porque o correlation ID/trace atravessa o Kafka (fim-a-fim A→B), essencial para depurar o fluxo assíncrono Outbox/Inbox.
 * Bom, porque zero infra extra — CloudWatch/X-Ray gerenciados, pay-per-use (FinOps).
 * Bom, porque a instrumentação OTel é portável (backend trocável sem tocar no código).
-* Bom, porque a redação LGPD cumpre §2.1 do motor.
+* Bom, porque a redação LGPD evita exposição de dados pessoais em logs.
 * Ruim, porque CloudWatch/X-Ray têm UX menos rica que Datadog/Grafana.
 * Ruim, porque há lock-in no backend AWS (mitigado pelo SDK OTel portável).
 * Ruim, porque a propagação via header Kafka exige disciplina manual no consumer (restaurar o contexto do header).

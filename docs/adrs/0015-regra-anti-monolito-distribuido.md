@@ -12,7 +12,7 @@ impede os microsserviços A (Lançamentos) e B (Consolidado) de se tornarem um *
 distribuído** — ainda não estava registrada como decisão própria. O risco concreto: se A e B
 passarem a compartilhar uma biblioteca (jar de domínio/DTO comum), a evolução de um serviço
 passa a arrastar o outro, e a independência de deploy que o CQRS persegue se perde. A regra
-aparece hoje apenas como `anti_pattern` no `PERSONAS.md` e como citação em ADR-0004/0013 —
+aparece hoje apenas como diretriz interna de anti-padrão e como citação em ADR-0004/0013 —
 precisa virar ADR para fechar o Sprint 0.
 
 ## Alternativas consideradas

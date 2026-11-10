@@ -41,7 +41,7 @@ O feedback do desafio pede "arquivos práticos de IaC (Terraform/Ansible) e esti
 
 ### Q6 — Alvo de custo em dev?
 
-**R:** **~US$ 30/mês** (parâmetro do motor §6.2).
+**R:** **~US$ 30/mês** (limite de custo do ambiente dev).
 
 ## Critérios de decisão
 

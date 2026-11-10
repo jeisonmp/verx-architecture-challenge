@@ -7,7 +7,7 @@
 ## Estado atual (2026-11-10)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
-- ✅ ADRs 0001..0014 registrados — **todos accepted**.
+- ✅ ADRs 0001..0017 registrados — **todos accepted**.
 - ✅ Norma de branches/versionamento (`GITFLOW.md`) + base de release (`release.yml`, semantic-release — estágio §3 da ADR-0005).
 - ✅ `README.md` populado (execução local + validação manual).
 - ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e view de **deployment (infra AWS)** — visões L1/L2/L3.
@@ -59,6 +59,8 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 - [x] ADR-0013 — Instância RDS única (schemas por serviço) em dev — **accepted**
 - [x] ADR-0014 — FinOps do barramento e do RDS em dev (MSK pay-per-use, MSK Connect rejeitado, RDS 10h/dia) — **accepted**
 - [x] ADR-0015 — Regra anti-monólito distribuído (sem libs compartilhadas A↔B) — **accepted**
+- [x] ADR-0016 — FinOps da NAT Instance em dev (stop/start 10h/dia, ENI fixa + EIP) — **accepted**
+- [x] ADR-0017 — Ingress dev via VPN + ALB interno (paridade de roteamento dev↔prod) — **accepted**
 
 **Documentação C4 + docs (após as decisões)**
 
@@ -87,7 +89,7 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 |---|---|---|
 | VPC + sub-redes | rede isolada dos serviços (sub-rede privada) | — |
 | ECS Fargate | orquestração dos containers A e B (sem control plane) | 0010 |
-| ALB | entrada do tráfego no ECS | 0010 |
+| ALB | entrada do tráfego no ECS (interno, via VPC Link/VPN) | 0017 |
 | RDS PostgreSQL | instância única em dev — schemas de escrita (A) e projeção (B) | 0004 / 0013 |
 | MSK Serverless | barramento Kafka (`lancamento.criado` + DLQ) | 0003 |
 | API Gateway | borda única (POST /lancamentos, GET /consolidado) | 0007 |

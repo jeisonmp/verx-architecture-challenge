@@ -17,3 +17,5 @@
 | 0013 | [Instância RDS única (schemas por serviço) em dev — consolidação FinOps do database-per-service](adrs/0013-instancia-rds-unica-schemas-por-servico.md) | accepted | 2026-11-09 |
 | 0014 | [FinOps do barramento e do RDS em dev — MSK Serverless pay-per-use, MSK Connect rejeitado, RDS 10h/dia](adrs/0014-finops-msk-serverless-connect-rds.md) | accepted | 2026-11-09 |
 | 0015 | [Regra anti-monólito distribuído — sem libs compartilhadas entre A e B](adrs/0015-regra-anti-monolito-distribuido.md) | accepted | 2026-11-10 |
+| 0016 | [FinOps da NAT Instance em dev — stop/start 10h/dia (ENI fixa + EIP)](adrs/0016-finops-nat-instance-stop-start.md) | accepted | 2026-11-10 |
+| 0017 | [Ingress em dev via VPN + ALB interno — paridade de roteamento com produção](adrs/0017-ingress-dev-vpn-alb-interno.md) | accepted | 2026-11-10 |

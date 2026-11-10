@@ -4,5 +4,5 @@ Amazon MSK Serverless,us-east-1,4 partições (lancamento.criado 3 + DLQ 1), ret
 Amazon ECS Fargate,us-east-1,Tasks A+B (0.25 vCPU / 0.5 GB, 8h/dia),vCPU-hour,240,6.00
 Amazon CloudWatch,us-east-1,Logs (5 GB) + métricas,GB,5,3.00
 AWS X-Ray,us-east-1,Traces (1M requests, amostragem 100%),trace,1000000,5.07
-Amazon EC2,us-east-1,NAT Instance t3.micro (free tier 12m; pós 24/7 ≈ US$ 7.50/mês),instance,1,0.00
-TOTAL,,,,,25.55
+Amazon EC2,us-east-1,NAT Instance t3.micro (on-demand 10h/dia; free tier 12m = US$ 0; pós ≈ US$ 3.16/mês),instance,1,3.16
+TOTAL,,,,,28.71

@@ -8,13 +8,13 @@
 >
 > `https://calculator.aws/#/estimate?id=<ESTIMATE_ID>`
 >
-> O CSV exportado da ferramenta oficial deve substituir `estimativa-aws.csv` (que é uma estimativa preliminar).
+> O CSV exportado da ferramenta oficial está versionado como `estimativa-aws-oficial.csv`.
 
 ## Como gerar
 
 1. Abrir o [AWS Pricing Calculator](https://calculator.aws/#/createCalculator).
 2. Adicionar os serviços do escopo (RDS PostgreSQL, MSK Serverless, ECS Fargate, CloudWatch/X-Ray, NAT Instance).
-3. **Export estimate** → CSV → salvar como `docs/finops/estimativa-aws.csv` (substituir o preliminar).
+3. **Export estimate** → CSV → salvar como `docs/finops/estimativa-aws-oficial.csv` (substituir o export anterior).
 4. Copiar o link **Share** e colar na seção acima.
 
 ## Estimativa preliminar (base manual)

@@ -10,15 +10,14 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
-variable "state_bucket" {
-  description = "Bucket S3 do estado remoto (locking nativo via use_lockfile)"
-  type        = string
-}
-
 variable "environment" {
-  description = "Ambiente (dev / qas / prd)"
+  description = "Ambiente (dev / qas / prd) — seleciona environments/<env>.yaml"
   type        = string
-  default     = "dev"
+
+  validation {
+    condition     = contains(["dev", "qas", "prd"], var.environment)
+    error_message = "environment deve ser dev, qas ou prd."
+  }
 }
 
 variable "db_password" {

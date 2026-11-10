@@ -1,0 +1,17 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# Ambiente: qas — meio-termo (multi_az off por custo; insights on para diagnóstico)
+rds:
+  multi_az: false
+  performance_insights: true
+  backup_retention_days: 14
+  skip_final_snapshot: true
+  stop_start: false
+ecs:
+  container_insights: true
+logs:
+  retention_days: 14

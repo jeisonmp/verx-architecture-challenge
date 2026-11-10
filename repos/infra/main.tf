@@ -78,6 +78,126 @@ resource "aws_security_group" "msk" {
 }
 
 # ===========================================================================
+# Egress — NAT Instance t3.micro (ADR-0012 Q5)
+#
+# As sub-redes privadas (Fargate) precisam de saída à internet para puxar a
+# imagem do ECR e enviar CloudWatch Logs/X-Ray. NAT Instance (free tier) em vez
+# de NAT Gateway (~US$ 32/mês) — regra FinOps do motor (§6.3). Single point of
+# failure aceitável em dev.
+#
+# Nota FinOps: t3.micro free tier = 750h/mês por 12 meses. Após o período,
+# 24/7 ≈ US$ 7,50/mês — para manter o alvo, aplicar stop/start fora da janela
+# do Fargate (8h/dia), reutilizando o padrão do rds_scheduler.tf (ADR-0014).
+# ===========================================================================
+
+data "aws_ssm_parameter" "nat_ami" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-minimal-kernel-x86_64"
+}
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+
+  tags = { Name = "fluxo-caixa-igw-${var.environment}" }
+}
+
+resource "aws_subnet" "public" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, 0)
+  availability_zone = data.aws_availability_zones.available.names[0]
+
+  tags = { Name = "fluxo-caixa-public-1" }
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
+  }
+
+  tags = { Name = "fluxo-caixa-public-${var.environment}" }
+}
+
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block           = "0.0.0.0/0"
+    network_interface_id = aws_instance.nat.primary_network_interface_id
+  }
+
+  tags = { Name = "fluxo-caixa-private-${var.environment}" }
+}
+
+resource "aws_route_table_association" "private" {
+  count          = 2
+  subnet_id      = aws_subnet.private[count.index].id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_security_group" "nat" {
+  name   = "fluxo-caixa-nat-${var.environment}"
+  vpc_id = aws_vpc.main.id
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["10.0.0.0/16"] # tráfego das sub-redes privadas
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "fluxo-caixa-nat-${var.environment}" }
+}
+
+resource "aws_eip" "nat" {
+  domain = "vpc"
+
+  tags = { Name = "fluxo-caixa-nat-eip-${var.environment}" }
+}
+
+resource "aws_instance" "nat" {
+  ami                    = data.aws_ssm_parameter.nat_ami.value
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.nat.id]
+  source_dest_check      = false # habilita o forwarding (SNAT) — essencial para NAT
+
+  root_block_device {
+    encrypted  = true
+    kms_key_id = aws_kms_key.main.arn
+  }
+
+  user_data = <<-EOF
+    #!/bin/bash
+    set -euxo pipefail
+    # NAT instance: IP forwarding + masquerade para as sub-redes privadas
+    sysctl -w net.ipv4.ip_forward=1
+    echo "net.ipv4.ip_forward = 1" > /etc/sysctl.d/99-nat.conf
+    iptables -t nat -A POSTROUTING -s 10.0.0.0/16 -o eth0 -j MASQUERADE
+  EOF
+
+  tags = { Name = "fluxo-caixa-nat-${var.environment}" }
+}
+
+resource "aws_eip_association" "nat" {
+  allocation_id = aws_eip.nat.id
+  instance_id   = aws_instance.nat.id
+}
+
+# ===========================================================================
 # Criptografia em repouso — KMS (ADR-0007)
 # ===========================================================================
 resource "aws_kms_key" "main" {
@@ -87,7 +207,13 @@ resource "aws_kms_key" "main" {
 }
 
 # ===========================================================================
-# Banco de dados — RDS PostgreSQL (ADR-0004): escrita (A) + projeção (B)
+# Banco de dados — RDS PostgreSQL (ADR-0004 + ADR-0013)
+# Instância ÚNICA em dev com 2 schemas lógicos (lancamentos + consolidado).
+# O isolamento lógico do database-per-service é preservado no nível de schema
+# (cada role RDS IAM só enxerga o próprio schema); a separação física era
+# desnecessária a 50 req/s e o read side é reconstruível via replay do Kafka
+# (ADR-0003). Separar de volta em produção é uma opção YAGNI se a carga ou o
+# isolamento de falha real exigirem. Schemas/roles criados via Flyway (ADR-0004).
 # ===========================================================================
 resource "aws_db_subnet_group" "main" {
   name       = "fluxo-caixa-${var.environment}"
@@ -96,14 +222,14 @@ resource "aws_db_subnet_group" "main" {
   tags = { Name = "fluxo-caixa-${var.environment}" }
 }
 
-resource "aws_db_instance" "lancamentos" {
-  identifier     = "fluxo-caixa-lancamentos-${var.environment}"
+resource "aws_db_instance" "cashflow" {
+  identifier     = "fluxo-caixa-${var.environment}"
   engine         = "postgres"
   engine_version = "16.3"
   instance_class = var.rds_instance_class
 
-  db_name  = "lancamentos"
-  username = "cashflow"
+  db_name  = "cashflow"      # banco único — 2 schemas lógicos (ADR-0013)
+  username = "cashflow"      # master (admin/migrations); apps usam roles RDS IAM próprias
   password = var.db_password # injetado via Secrets Manager (ADR-0007)
 
   # RDS IAM auth (ADR-0007) — token de vida curta, sem segredo estático no serviço
@@ -115,38 +241,12 @@ resource "aws_db_instance" "lancamentos" {
   vpc_security_group_ids  = [aws_security_group.rds.id]
   db_subnet_group_name    = aws_db_subnet_group.main.name
 
-  multi_az                    = false  # FinOps: dev single-AZ
-  backup_retention_period     = 7
-  skip_final_snapshot         = true
-  performance_insights_enabled = false # FinOps: desligado em dev
+  multi_az                    = local.rds_multi_az
+  backup_retention_period     = local.rds_backup_retention
+  skip_final_snapshot         = local.rds_skip_final_snapshot
+  performance_insights_enabled = local.rds_performance_insights
 
-  tags = { Name = "fluxo-caixa-lancamentos-${var.environment}" }
-}
-
-resource "aws_db_instance" "consolidado" {
-  identifier     = "fluxo-caixa-consolidado-${var.environment}"
-  engine         = "postgres"
-  engine_version = "16.3"
-  instance_class = var.rds_instance_class
-
-  db_name  = "consolidado"
-  username = "cashflow"
-  password = var.db_password
-
-  iam_database_authentication_enabled = true
-
-  allocated_storage       = 20
-  storage_encrypted       = true
-  kms_key_id              = aws_kms_key.main.arn
-  vpc_security_group_ids  = [aws_security_group.rds.id]
-  db_subnet_group_name    = aws_db_subnet_group.main.name
-
-  multi_az                    = false
-  backup_retention_period     = 7
-  skip_final_snapshot         = true
-  performance_insights_enabled = false
-
-  tags = { Name = "fluxo-caixa-consolidado-${var.environment}" }
+  tags = { Name = "fluxo-caixa-${var.environment}" }
 }
 
 # ===========================================================================
@@ -181,13 +281,13 @@ resource "aws_ecs_cluster" "main" {
 
   setting {
     name  = "containerInsights"
-    value = "disabled" # FinOps: desligado em dev
+    value = local.ecs_container_insights ? "enabled" : "disabled"
   }
 }
 
 resource "aws_cloudwatch_log_group" "app" {
   name              = "/ecs/fluxo-caixa-${var.environment}"
-  retention_in_days = 7
+  retention_in_days = local.log_retention_days
 }
 
 resource "aws_iam_role" "ecs_execution" {
@@ -232,7 +332,11 @@ resource "aws_iam_role_policy" "ecs_task" {
       {
         Effect   = "Allow"
         Action   = ["rds-db:connect"]
-        Resource = ["arn:aws:rds-db:${var.aws_region}:*:dbuser:*/cashflow"]
+        # Duas roles RDS IAM — uma por schema (ADR-0013); passwordless (ADR-0007)
+        Resource = [
+          "arn:aws:rds-db:${var.aws_region}:*:dbuser:*/lancamentos",
+          "arn:aws:rds-db:${var.aws_region}:*:dbuser:*/consolidado"
+        ]
       },
       {
         Effect = "Allow"

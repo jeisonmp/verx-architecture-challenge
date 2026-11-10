@@ -58,6 +58,7 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
 
                     deploymentNode "VPC" "Rede isolada dos serviços" {
                         deploymentNode "Sub-rede privada" {
+                            alb = infrastructureNode "ALB — Application Load Balancer (interno)" "Ingress dos serviços A/B (ECS Fargate) — target groups + connection draining no rolling update; esquema internal (ADR-0017)" "Amazon ALB"
                             deploymentNode "ECS Fargate — Serviço A" "Lançamentos" "AWS Fargate" {
                                 containerInstance lancamentos.api
                                 containerInstance lancamentos.outboxWorker
@@ -78,6 +79,10 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
                             softwareSystemInstance broker
                         }
                     }
+
+                    gateway -> alb "Roteia POST/GET via VPC Link (JWT/Cognito | api_key)" "HTTPS"
+                    alb -> lancamentos.api "Target group A — POST /lancamentos" "HTTP"
+                    alb -> consolidado.api "Target group B — GET /consolidado" "HTTP"
 
                     infrastructureNode "AWS Secrets Manager" "Fallback para segredos não IAM-ificados" "AWS Secrets Manager"
                     infrastructureNode "AWS KMS" "Gestão de chaves (criptografia em repouso)" "AWS KMS"

@@ -11,7 +11,7 @@
 ## Como gerar
 
 1. Abrir o [AWS Pricing Calculator](https://calculator.aws/#/createCalculator).
-2. Adicionar os serviços do escopo (RDS PostgreSQL, MSK Serverless, ECS Fargate, CloudWatch/X-Ray, NAT Instance).
+2. Adicionar os serviços do escopo (RDS PostgreSQL, MSK Serverless, ECS Fargate, ALB, CloudWatch/X-Ray, NAT Instance + EIP, KMS, Secrets Manager).
 3. **Export estimate** → CSV → salvar como `docs/finops/estimativa-aws-oficial.csv` (substituir o export anterior).
 4. Copiar o link **Share** e colar na seção acima.
 
@@ -50,3 +50,9 @@ Nota (NAT Instance — on-demand 10h/dia): decidido **on-demand** (não spot).
 ≈ **US$ 3,16/mês**. Spot foi descartado: não consome free tier e o reclaim (aviso de
 ~2min) derrubaria o egress das sub-redes privadas. A janela de 10h acompanha o RDS
 (`rds_scheduler.tf`, ADR-0014) e cobre o Fargate (8h/dia).
+
+Nota (ALB + itens de segurança — ADR-0016/0017): a entrada dos serviços A/B ganhou um
+**ALB interno** (`internal = true`, ADR-0017) — base **24/7 ≈ US$ 16,43/mês** (ALBs não
+têm stop/start; LCU desprezível no tráfego dev). A NAT em stop/start carrega um **EIP
+ocioso** (~US$ 2,10/mês, ADR-0016). KMS + Secrets Manager (ADR-0007) somam ~US$ 1,40/mês.
+Total dev sobe de ~US$ 46,33 para **~US$ 66,26/mês**.

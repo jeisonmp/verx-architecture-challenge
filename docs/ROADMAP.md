@@ -16,7 +16,7 @@
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
-Sprint 0 **concluído**: decisões (ADR-0001..0015), C4 (`workspace.dsl`) e docs
+Sprint 0 **concluído**: decisões (ADR-0001..0017), C4 (`workspace.dsl`) e docs
 obrigatórias (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`)
 congelados.
 
@@ -36,7 +36,7 @@ congelados.
 | Segurança | API Gateway + WAF + Cognito + Secrets Manager/IAM (passwordless) + refresh tokens | ✅ ADR-0007 (accepted) |
 | Observabilidade | Structured logging (JSON) + CloudWatch + tracing X-Ray (ADOT) | ✅ ADR-0011 (accepted) |
 | FinOps | AWS Pricing Calculator (estimativa mensal) | ✅ ADR-0012 (accepted) |
-| Documentação | C4 (Structurizr) + ADRs (MADR) | ✅ em curso |
+| Documentação | C4 (Structurizr) + ADRs (MADR) | ✅ concluído |
 
 ## Sprint 0 — Definições de Arquitetura (concluída)
 

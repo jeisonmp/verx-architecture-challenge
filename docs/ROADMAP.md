@@ -11,16 +11,16 @@
 - ✅ Norma de branches/versionamento (`GITFLOW.md`) + base de release (`release.yml`, semantic-release — estágio §3 da ADR-0005).
 - ✅ `README.md` populado (execução local + validação manual).
 - ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e view de **deployment (infra AWS)** — visões L1/L2/L3.
-- ⏳ Docs em esqueleto (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
+- ✅ Docs obrigatórias populadas (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
 - ✅ Regra anti-monólito distribuído fechada — ADR-0015 (accepted).
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
-O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem correta: **decidir (ADR) → desenhar (C4) → narrar (docs)**.
+Sprint 0 **concluído**: decisões (ADR-0001..0015), C4 (`workspace.dsl`) e docs
+obrigatórias (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`)
+congelados.
 
-1. **Popular as docs obrigatórias** — `BUSINESS.md` (domínios/capacidades), `GLOSSARY.md`, `ARCHITECTURE.md` (arquitetura-alvo).
-
-> Sprints 1+ (código, testes, IaC, FinOps) começam depois de congelado o Sprint 0.
+> Sprints 1+ (código, testes, IaC, FinOps) começam agora.
 
 ## Premissas (Sprint 0 — propostas, congeladas via ADR)
 
@@ -38,7 +38,7 @@ O C4 (`workspace.dsl`) **desenha decisões que ainda não foram tomadas**. Ordem
 | FinOps | AWS Pricing Calculator (estimativa mensal) | ✅ ADR-0012 (accepted) |
 | Documentação | C4 (Structurizr) + ADRs (MADR) | ✅ em curso |
 
-## Sprint 0 — Definições de Arquitetura (em andamento)
+## Sprint 0 — Definições de Arquitetura (concluída)
 
 Objetivo: congelar stack, premissas e decisões **antes** de escrever código de produto.
 
@@ -63,9 +63,9 @@ Objetivo: congelar stack, premissas e decisões **antes** de escrever código de
 **Documentação C4 + docs (após as decisões)**
 
 - [x] `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e deployment (infra AWS); visões L1/L2/L3
-- [ ] `BUSINESS.md` — mapeamento de domínios funcionais e capacidades de negócio
-- [ ] `GLOSSARY.md` — vocabulário do domínio
-- [ ] `ARCHITECTURE.md` — arquitetura-alvo (desenho completo da solução)
+- [x] `BUSINESS.md` — mapeamento de domínios funcionais e capacidades de negócio
+- [x] `GLOSSARY.md` — vocabulário do domínio
+- [x] `ARCHITECTURE.md` — arquitetura-alvo (desenho completo da solução)
 - [x] `README.md` — instruções de execução local (requisito obrigatório)
 
 **Dependências (encadeamento de decisões)**

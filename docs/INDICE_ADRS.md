@@ -14,3 +14,5 @@
 | 0010 | [Orquestração dos microsserviços — ECS Fargate vs EKS](adrs/0010-orquestracao-ecs-fargate-vs-eks.md) | accepted | 2026-11-09 |
 | 0011 | [Observabilidade — logs JSON, métricas CloudWatch e tracing X-Ray (ADOT)](adrs/0011-observabilidade-logs-metricas-tracing.md) | accepted | 2026-11-09 |
 | 0012 | [IaC Terraform + FinOps — organização repos/, infra declarada em .tf (sem apply)](adrs/0012-iac-terraform-finops.md) | accepted | 2026-11-09 |
+| 0013 | [Instância RDS única (schemas por serviço) em dev — consolidação FinOps do database-per-service](adrs/0013-instancia-rds-unica-schemas-por-servico.md) | accepted | 2026-11-09 |
+| 0014 | [FinOps do barramento e do RDS em dev — MSK Serverless pay-per-use, MSK Connect rejeitado, RDS 10h/dia](adrs/0014-finops-msk-serverless-connect-rds.md) | accepted | 2026-11-09 |

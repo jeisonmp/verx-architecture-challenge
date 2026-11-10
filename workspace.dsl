@@ -67,13 +67,12 @@ workspace "Fluxo de Caixa" "Solução CQRS com Outbox/Inbox" {
                                 containerInstance consolidado.consumer
                             }
                         }
-                        deploymentNode "Amazon RDS" "PostgreSQL" "Amazon RDS" {
-                            deploymentNode "PostgreSQL — Lançamentos" {
-                                containerInstance lancamentos.db
-                            }
-                            deploymentNode "PostgreSQL — Consolidado" {
-                                containerInstance consolidado.db
-                            }
+                        deploymentNode "Sub-rede pública" {
+                            infrastructureNode "NAT Instance" "Egress (SNAT) free-tier — ECR + CloudWatch/X-Ray" "Amazon EC2"
+                        }
+                        deploymentNode "Amazon RDS — instância única" "PostgreSQL 16.3 — schemas lancamentos + consolidado (ADR-0013)" "Amazon RDS" {
+                            containerInstance lancamentos.db
+                            containerInstance consolidado.db
                         }
                         deploymentNode "Amazon MSK Serverless" "Kafka — lancamento.criado + DLQ" "Amazon MSK" {
                             softwareSystemInstance broker

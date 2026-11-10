@@ -1,8 +1,8 @@
 Service,Region,Description,Unit,Quantity,Monthly Cost (USD)
-Amazon RDS for PostgreSQL,us-east-1,db.t4g.micro single-AZ — instância única (schemas lancamentos + consolidado); compute 10h/dia (4,80) + storage 20GB 24/7 (2,30),instance,1,7.10
+Amazon RDS for PostgreSQL,us-east-1,db.t4g.micro single-AZ (gp2) — instância única (schemas lancamentos + consolidado); 10h/dia,instance,1,7.17
 Amazon MSK Serverless,us-east-1,4 partições (lancamento.criado 3 + DLQ 1), retenção 12h,partition,4,4.38
-Amazon ECS Fargate,us-east-1,Tasks A+B (0.25 vCPU / 0.5 GB, 8h/dia),vCPU-hour,240,6.00
-Amazon CloudWatch,us-east-1,Logs (5 GB) + métricas,GB,5,3.00
+Amazon ECS Fargate,us-east-1,Tasks A+B (1 vCPU / 2 GB, 8h/dia),vCPU-hour,480,24.03
+Amazon CloudWatch,us-east-1,Logs (5 GB) + métricas,GB,5,2.52
 AWS X-Ray,us-east-1,Traces (1M requests, amostragem 100%),trace,1000000,5.07
 Amazon EC2,us-east-1,NAT Instance t3.micro (on-demand 10h/dia; free tier 12m = US$ 0; pós ≈ US$ 3.16/mês),instance,1,3.16
-TOTAL,,,,,28.71
+TOTAL,,,,,46.33

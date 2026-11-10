@@ -23,15 +23,15 @@ variable "rds_instance_class" {
 }
 
 variable "fargate_cpu" {
-  description = "CPU das tasks Fargate"
+  description = "CPU das tasks Fargate (Java 21 + Spring Boot 3: 1 vCPU)"
   type        = string
-  default     = "256"
+  default     = "1024"
 }
 
 variable "fargate_memory" {
-  description = "Memória das tasks Fargate"
+  description = "Memória das tasks Fargate (JVM heap + metaspace + overhead: 2 GB)"
   type        = string
-  default     = "512"
+  default     = "2048"
 }
 
 variable "ecs_desired_count" {

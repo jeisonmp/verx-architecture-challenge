@@ -39,11 +39,13 @@ resource "aws_security_group" "app" {
     cidr_blocks = ["10.0.0.0/16"]
   }
 
+  # Egress irrestrito por design: Fargate alcança ECR/CloudWatch/X-Ray/Secrets
+  # Manager via NAT Instance (ADR-0016). VPC Endpoints ficam fora do escopo.
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #trivy:ignore:AVD-AWS-0104
   }
 
   tags = { Name = "fluxo-caixa-app-${local.environment}" }
@@ -153,11 +155,12 @@ resource "aws_security_group" "nat" {
     cidr_blocks = ["10.0.0.0/16"] # tráfego das sub-redes privadas
   }
 
+  # Egress irrestrito é o propósito da NAT (SNAT/masquerade). Por design.
   egress {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] #trivy:ignore:AVD-AWS-0104
   }
 
   tags = { Name = "fluxo-caixa-nat-${local.environment}" }
@@ -181,6 +184,11 @@ resource "aws_eip" "nat" {
 resource "aws_instance" "nat" {
   ami           = data.aws_ssm_parameter.nat_ami.value
   instance_type = "t3.micro"
+
+  # IMDS v2 — token obrigatório (mitiga SSRF/exfiltração de credencial)
+  metadata_options {
+    http_tokens = "required"
+  }
 
   network_interface {
     network_interface_id = aws_network_interface.nat.id

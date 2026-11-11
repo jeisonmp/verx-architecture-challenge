@@ -19,7 +19,7 @@ name: release
 #                     Dependency-Check) + gitleaks; gate: 0 risco crítico.
 #   §2 PR dev → master: qualidade — testes unitários/integração (containers
 #                     PostgreSQL + Kafka) + cobertura ≥ 80% (meta 90% outbox/inbox).
-#   §3 master: release — terraform validate + tfsec/checkov (automático)
+#   §3 master: release — terraform validate + Trivy/checkov (automático)
 #                     antes deste job de release (semantic-release).
 #
 # Gate de aprovação de PR: a aprovação é aplicada por BRANCH PROTECTION

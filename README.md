@@ -36,7 +36,7 @@ feat/fix/* → dev → master
 |---|---|---|
 | **`feat/fix/*` → `dev`** | SAST (SonarQube + análise estática do runtime) · SCA (OWASP Dependency-Check/Dependabot) · gitleaks | **0 risco crítico** (médios mitigáveis) |
 | **`dev` → `master`** | Testes unitários + integração (containers: PostgreSQL + Kafka) · cobertura de código | 100% dos testes passando · cobertura ≥ 80% (meta 90% no núcleo outbox/inbox) |
-| **`master`** | `terraform validate` + tfsec/checkov · release/tag (semantic-release) | — |
+| **`master`** | `terraform validate` + Trivy/checkov · release/tag (semantic-release) | — |
 
 ### Validação manual (local)
 
@@ -63,7 +63,7 @@ Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no
 4. **IaC** — validação de segurança da infraestrutura:
 
    ```bash
-   terraform validate && tfsec .
+   terraform validate && trivy config .
    ```
 
 ### Release e tags

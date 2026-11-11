@@ -29,12 +29,12 @@ Ao ativar esta skill, carregue:
 | ---------- | --- |
 | Terraform | IaC — estado remoto S3 + locking `use_lockfile` |
 | AWS | ECS Fargate, RDS, MSK Serverless, VPC, WAF, Cognito, Secrets Manager, KMS |
-| GitHub Actions | `terraform validate` + tfsec/checkov (sem apply) |
+| GitHub Actions | `terraform validate` + Trivy/checkov (sem apply) |
 
 ## Comandos Essenciais
 
 ```bash
-terraform validate && tfsec .     # validação estática (CI)
+terraform validate && trivy config .   # validação estática (CI)
 ```
 
 ## FinOps (dev)

@@ -49,7 +49,7 @@ O feedback do desafio pede "arquivos práticos de IaC (Terraform/Ansible) e esti
 |---|---|---|---|---|
 | Portabilidade (multi-cloud) | sim | sim | não (AWS-only) | sim |
 | Declarativo | HCL | código (imperativo) | YAML/JSON | YAML |
-| Validação no CI (ADR-0005) | `terraform validate` + tfsec/checkov | — | — | — |
+| Validação no CI (ADR-0005) | `terraform validate` + Trivy/checkov | — | — | — |
 | Ecossistema/adoção | ampla | ampla | AWS-only | config mgmt |
 
 ## Decisão
@@ -67,7 +67,7 @@ O feedback do desafio pede "arquivos práticos de IaC (Terraform/Ansible) e esti
 
 ## Consequências
 
-* Bom, porque Terraform é portável e já validado no CI (ADR-0005 §3: `terraform validate` + tfsec/checkov).
+* Bom, porque Terraform é portável e já validado no CI (ADR-0005 §3: `terraform validate` + Trivy/checkov).
 * Bom, porque `use_lockfile = true` usa o locking nativo do S3 (1.10+) e elimina o DynamoDB — um recurso a menos para manter.
 * Bom, porque os `.tf` reais (ECS/MSK/RDS) evidenciam IaC concreto, além de texto.
 * Bom, porque WAF só em prd + NAT Instance mantêm dev barato (alvo ~US$ 30/mês).

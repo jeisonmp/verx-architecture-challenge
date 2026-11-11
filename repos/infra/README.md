@@ -63,7 +63,7 @@ A visão C4 de deployment está no `workspace.dsl` (`deployment * aws`). Estrutu
   (bootstrap), porque o Terraform não pode gerenciar a própria role que assume
   (chicken-and-egg).
 - O CI de hoje (`../../.github/workflows/infra.yml`, raiz do repo) roda **só
-  validação estática** (`terraform fmt/validate` + tfsec/checkov) — **sem `apply`,
+  validação estática** (`terraform fmt/validate` + Trivy/checkov) — **sem `apply`,
   sem credencial** (ADR-0012 dec4). O step OIDC abaixo entra quando houver conta real.
 
 **Trust policy** (escopada ao repo):

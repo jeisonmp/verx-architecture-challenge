@@ -49,7 +49,7 @@ Adotar um workflow GitHub Actions com fluxo de branches `dev → master`, manten
 
 ### 3. `master` — release
 
-* Validação de IaC: `terraform validate` + tfsec/checkov (automático).
+* Validação de IaC: `terraform validate` + Trivy/checkov (automático).
 * Release/tag mantida pelo workflow existente (semantic-release — `release.yml`).
 
 ### 4. Validação manual (ambiente 100% local)

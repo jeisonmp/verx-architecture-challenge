@@ -5,7 +5,7 @@
 # in any form or by any means without express written permission.
 
 # ADR-0005 §3 + ADR-0012 dec4 — validação estática de IaC (sem apply).
-# Roda `terraform fmt/validate` + tfsec + checkov sobre repos/infra.
+# Roda `terraform fmt/validate` + Trivy (config) + checkov sobre repos/infra.
 # NÃO usa credencial AWS: `terraform init -backend=false` + scanners estáticos.
 # (O step OIDC para plan/apply está documentado em repos/infra/README.md —
 #  entra quando houver conta real. Ver §Bootstrap.)
@@ -46,16 +46,19 @@ jobs:
       - name: Init (sem backend — sem credencial AWS)
         run: terraform init -backend=false
 
-      - name: Validate
+      - name: Validate (sintaxe/refs HCL — validação do Terraform)
         run: terraform validate
 
-      - name: tfsec (SAST de IaC)
-        uses: aquasecurity/tfsec-action@v1
+      - name: Trivy (SAST de IaC — sucessor do tfsec)
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          working_directory: repos/infra
+          scan-type: config
+          scan-ref: repos/infra
+          exit-code: 1
+          severity: HIGH,CRITICAL
 
       - name: checkov (compliance de IaC)
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v12.3140.0
         with:
           directory: repos/infra
           framework: terraform

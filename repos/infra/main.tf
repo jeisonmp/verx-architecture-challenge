@@ -167,7 +167,7 @@ resource "aws_network_interface" "nat" {
   subnet_id         = aws_subnet.public.id
   private_ips       = ["10.0.0.10"] # IP privado fixo — sobrevive ao stop/start da NAT
   security_groups   = [aws_security_group.nat.id]
-  source_dest_check = false         # habilita o forwarding (SNAT) — essencial para NAT
+  source_dest_check = false # habilita o forwarding (SNAT) — essencial para NAT
 
   tags = { Name = "fluxo-caixa-nat-eni-${local.environment}" }
 }
@@ -248,15 +248,15 @@ resource "aws_db_instance" "cashflow" {
   # RDS IAM auth (ADR-0007) — token de vida curta, sem segredo estático no serviço
   iam_database_authentication_enabled = true
 
-  allocated_storage       = 20
-  storage_encrypted       = true
-  kms_key_id              = aws_kms_key.main.arn
-  vpc_security_group_ids  = [aws_security_group.rds.id]
-  db_subnet_group_name    = aws_db_subnet_group.main.name
+  allocated_storage      = 20
+  storage_encrypted      = true
+  kms_key_id             = aws_kms_key.main.arn
+  vpc_security_group_ids = [aws_security_group.rds.id]
+  db_subnet_group_name   = aws_db_subnet_group.main.name
 
-  multi_az                    = local.rds_multi_az
-  backup_retention_period     = local.rds_backup_retention
-  skip_final_snapshot         = local.rds_skip_final_snapshot
+  multi_az                     = local.rds_multi_az
+  backup_retention_period      = local.rds_backup_retention
+  skip_final_snapshot          = local.rds_skip_final_snapshot
   performance_insights_enabled = local.rds_performance_insights
 
   tags = { Name = "fluxo-caixa-${local.environment}" }
@@ -343,8 +343,8 @@ resource "aws_iam_role_policy" "ecs_task" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect   = "Allow"
-        Action   = ["rds-db:connect"]
+        Effect = "Allow"
+        Action = ["rds-db:connect"]
         # Duas roles RDS IAM — uma por schema (ADR-0013); passwordless (ADR-0007)
         Resource = [
           "arn:aws:rds-db:${var.aws_region}:*:dbuser:*/lancamentos",

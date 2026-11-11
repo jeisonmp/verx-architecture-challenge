@@ -1,6 +1,6 @@
 # Consolidado (Microsserviço B — Leitura)
 
-> Parte da solução **Fluxo de Caixa (CQRS)** (`src/`). Modelo C4 em `../../workspace.dsl`
+> Parte da solução **Fluxo de Caixa (CQRS)** (raiz). Modelo C4 em `../../workspace.dsl`
 > e decisões em `../../docs/adrs/`.
 
 Microsserviço de **leitura**: consome o tópico `lancamento.criado`, aplica **Inbox**

@@ -9,7 +9,7 @@ in any form or by any means without express written permission.
 # AGENTS.md — Consolidado (Microsserviço B · Leitura)
 
 > Repo de produto (`family: filho`). Herda de `verx-architecture-challenge-dev`
-> (projeto pai — `src/`). Regras globais do motor: `<raiz>/AGENTS.md` (ralph-engine).
+> (projeto pai — raiz). Regras globais do motor: `<raiz>/AGENTS.md` (ralph-engine).
 
 ## Persona
 

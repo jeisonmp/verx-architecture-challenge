@@ -3,3 +3,15 @@ workspace.json
 
 # Materiais de entrada do desafio (enunciado/gabarito — não são entregáveis)
 docs/refs/
+
+.claude/
+.aider.conf.yaml
+.ralph-engine
+ia/*
+
+# Artefatos locais / caches / editor
+__pycache__/
+*.pyc
+.vscode/
+tmp/
+repro/

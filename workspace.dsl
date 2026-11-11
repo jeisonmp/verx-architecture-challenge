@@ -8,7 +8,7 @@ in any form or by any means without express written permission.
 
 /*
 Regra: qualquer alteração neste arquivo exige consulta prévia à documentação
-oficial do Structurizr (docs/refs/structurizr.github.io) e c4-model (src/modelos/c4-model.md).
+oficial do Structurizr (docs/refs/structurizr.github.io) e c4-model (modelos/c4-model.md).
 Ver ADR-0009.
 */
 

@@ -6,7 +6,7 @@ No part of this software may be reproduced, distributed, or transmitted
 in any form or by any means without express written permission.
 -->
 
-# AGENTS.md — src (Fluxo de Caixa — CQRS)
+# AGENTS.md — Fluxo de Caixa — CQRS
 
 > Repo de produto (`family: filho`). Regras globais do motor: `<raiz>/AGENTS.md`
 > (ralph-engine). Fonte única de personas e skills: `PERSONAS.md`.
@@ -15,7 +15,7 @@ in any form or by any means without express written permission.
 
 - **persona_id:** `verx-architecture-challenge-dev`
 - **display_name:** Verx Architecture Challenge
-- **active_skills:** `clean-code`, `security-auditor`, `architect-review`, `code-reviewer`
+- **active_skills:** `architect-review`, `security-auditor`, `docker-expert`, `microservices-patterns`, `github-actions-templates`
 - **activation_log_format:** `[Contexto: Verx Architecture Challenge — Java 21 · Spring Boot 3 · Kafka · PostgreSQL]`
 - **inheritance:** Completa de `<raiz>/AGENTS.md`
 

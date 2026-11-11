@@ -1,0 +1,12 @@
+Service,Region,Description,Unit,Quantity,Monthly Cost (USD)
+Amazon RDS for PostgreSQL,us-east-1,db.t4g.micro single-AZ (gp2) — instância única (schemas lancamentos + consolidado); 10h/dia,instance,1,7.17
+Amazon MSK Serverless,us-east-1,4 partições (lancamento.criado 3 + DLQ 1), retenção 12h,partition,4,4.38
+Amazon ECS Fargate,us-east-1,Tasks A+B (1 vCPU / 2 GB, 8h/dia),vCPU-hour,480,24.03
+Amazon ALB,us-east-1,Application Load Balancer interno (scheme internal — ADR-0017); base 24/7; LCU desprezível no tráfego dev,load balancer-hour,730,16.43
+Amazon CloudWatch,us-east-1,Logs (5 GB) + métricas,GB,5,2.52
+AWS X-Ray,us-east-1,Traces (1M requests, amostragem 100%),trace,1000000,5.07
+Amazon EC2,us-east-1,NAT Instance t3.micro (on-demand 10h/dia; free tier 12m = US$ 0; pós ≈ US$ 3.16/mês),instance,1,3.16
+Amazon EC2,us-east-1,Elastic IP ocioso (14h/dia — NAT parada; ADR-0016),elastic-ip-hour,420,2.10
+AWS KMS,us-east-1,1 chave — criptografia em repouso (ADR-0007),key,1,1.00
+AWS Secrets Manager,us-east-1,1 segredo fallback não IAM-ificável (ADR-0007),secret,1,0.40
+TOTAL,,,,,66.26

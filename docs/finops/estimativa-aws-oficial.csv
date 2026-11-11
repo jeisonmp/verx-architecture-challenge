@@ -1,0 +1,19 @@
+﻿Resumo da estimativa
+Custo inicial,Custo mensal,Total 12 months cost,Moeda
+0,41.95,503.40,USD
+,,* Inclui um custo inicial
+
+
+Estimativa detalhada
+Hierarquia de grupos,Região,Descrição,Serviço,Pagamento adiantado,Mensal,First 12 months total,Moeda,Status,Resumo da configuração
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),Postgres - lançamentos e consolidados,Amazon RDS for PostgreSQL,0,7.1667,86.00,USD,,"Quantidade de armazenamento (20 GB), Volume de armazenamento (SSD de uso geral (gp2)), Nós (1), Tipo de instância (db.t4g.micro), Utilização (somente sob demanda) (10 Hours/Day), Opção de implantação (Single-AZ), Modelo de preço (OnDemand), Número de horas em execução no suporte estendido do Amazon RDS (0 por mês)"
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),Kafka,Amazon Managed Streaming for Apache Kafka (MSK),0,0,0.00,USD,,"Período de retenção de dados (12 horas), Throughput médio mensal de entrada (1 KB/s por mês), Throughput médio mensal de saída (1 MB/s por mês), Número de partições (somente partição líder) (4)"
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),ECS - lancamentos e consolidados,AWS Fargate,0,24.03,288.36,USD,,"Sistema operacional (Linux), Arquitetura de CPU (x86), Duração média (8 horas), Número de tarefas ou pods (2 por dia), Quantidade de armazenamento temporário alocada para o Amazon ECS (20 GB), Quantidade de memória alocada (2 GB)"
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),Logs,Amazon CloudWatch,0,2.5225,30.27,USD,,"Número de eventos e spans de OTEL móvel ou spans por visita (70), Taxa de amostragem móvel (1), Logs padrão: dados consumidos (5 GB)"
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),Rastreabilidade (TraceID),AWS X-Ray,0,5.07,60.84,USD,,"Taxa de amostragem (1), Adicionar X-Ray Insights (Não), Número de solicitações por mês (1000000), Número de consultas por mês (100), Rastreamentos recuperados por consulta (50)"
+Verx Challenge > dev,Leste dos EUA (N. da Virgínia),EC2 - NAT Instance,Amazon EC2 ,0,3.163333,37.96,USD,,"Locação (Instâncias compartilhadas), Sistema operacional (Linux), Carga de trabalho (Consistent, Número de instâncias: 1), Instância do EC2 avançada (t3.micro), Pricing strategy (On-Demand Utilization: 10 Hours/Day), Habilitar monitoramento (desabilitada), DT Entrada: Not selected (0 TB por mês), DT Saída: Not selected (0 TB por mês), DT Intrarregião: (0 TB por mês)"
+
+
+
+Confirmação
+"* A Calculadora de Preços da AWS fornece apenas uma estimativa de suas taxas da AWS e não inclui nenhuma taxa aplicável. Suas taxas reais dependem de vários fatores, inclusive de seu uso real dos serviços da AWS."

@@ -1,0 +1,19 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# Ambiente: prd — alta disponibilidade + retenção estendida (backup/LGPD)
+rds:
+  multi_az: true
+  performance_insights: true
+  backup_retention_days: 30
+  skip_final_snapshot: false
+  stop_start: false
+nat:
+  stop_start: false
+ecs:
+  container_insights: true
+logs:
+  retention_days: 30

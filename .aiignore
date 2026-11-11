@@ -1,0 +1,6 @@
+# Arquivos/pastas completamente ignorados pelo agente (não ler, não alterar, não auditar header).
+
+# Materiais de entrada do desafio e referências vendadas de terceiros — não são
+# entregáveis nem código do cliente (espelho do Structurizr em
+# docs/refs/structurizr.github.io, incl. run.sh).
+docs/refs/

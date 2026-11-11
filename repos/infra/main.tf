@@ -11,12 +11,71 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = { Name = "fluxo-caixa-${local.environment}" }
+}
+
+# Default SG da VPC restrito (CKV2_AWS_12) — sem regras de entrada/saída
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
+
+  tags = { Name = "fluxo-caixa-default-${local.environment}" }
+}
+
+# VPC Flow Logs (ADR-0011 — observabilidade de rede)
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name              = "/vpc/fluxo-caixa-${local.environment}"
+  retention_in_days = local.log_retention_days
+  kms_key_id        = aws_kms_key.main.arn
+}
+
+resource "aws_iam_role" "flow_log" {
+  name = "fluxo-caixa-flowlog-${local.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "vpc-flow-logs.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "flow_log" {
+  name = "fluxo-caixa-flowlog"
+  role = aws_iam_role.flow_log.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ]
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_flow_log" "main" {
+  log_destination      = aws_cloudwatch_log_group.flow_log.arn
+  log_destination_type = "cloud-watch-logs"
+  traffic_type         = "ALL"
+  vpc_id               = aws_vpc.main.id
+  iam_role_arn         = aws_iam_role.flow_log.arn
+
+  tags = { Name = "fluxo-caixa-flowlog-${local.environment}" }
 }
 
 resource "aws_subnet" "private" {
@@ -29,10 +88,12 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_security_group" "app" {
-  name   = "fluxo-caixa-app-${local.environment}"
-  vpc_id = aws_vpc.main.id
+  name        = "fluxo-caixa-app-${local.environment}"
+  description = "Trafego interno dos servicos Fargate A/B"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
+    description = "HTTP interno (8080) entre A e B"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -42,6 +103,7 @@ resource "aws_security_group" "app" {
   # Egress irrestrito por design: Fargate alcança ECR/CloudWatch/X-Ray/Secrets
   # Manager via NAT Instance (ADR-0016). VPC Endpoints ficam fora do escopo.
   egress {
+    description = "Egress via NAT Instance (ADR-0016)"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -52,10 +114,12 @@ resource "aws_security_group" "app" {
 }
 
 resource "aws_security_group" "rds" {
-  name   = "fluxo-caixa-rds-${local.environment}"
-  vpc_id = aws_vpc.main.id
+  name        = "fluxo-caixa-rds-${local.environment}"
+  description = "Acesso PostgreSQL (5432) a partir dos servicos Fargate"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
+    description     = "PostgreSQL (5432) - origem: app SG"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
@@ -66,10 +130,12 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_security_group" "msk" {
-  name   = "fluxo-caixa-msk-${local.environment}"
-  vpc_id = aws_vpc.main.id
+  name        = "fluxo-caixa-msk-${local.environment}"
+  description = "Acesso Kafka (9098) a partir dos servicos Fargate"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
+    description     = "Kafka (9098) - origem: app SG"
     from_port       = 9098
     to_port         = 9098
     protocol        = "tcp"
@@ -145,18 +211,21 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_security_group" "nat" {
-  name   = "fluxo-caixa-nat-${local.environment}"
-  vpc_id = aws_vpc.main.id
+  name        = "fluxo-caixa-nat-${local.environment}"
+  description = "NAT Instance - forwarding de egress das sub-redes privadas"
+  vpc_id      = aws_vpc.main.id
 
   ingress {
+    description = "Trafego das sub-redes privadas"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["10.0.0.0/16"] # tráfego das sub-redes privadas
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   # Egress irrestrito é o propósito da NAT (SNAT/masquerade). Por design.
   egress {
+    description = "Egress irrestrito (SNAT/masquerade)"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -225,6 +294,29 @@ resource "aws_kms_key" "main" {
   description             = "Chave KMS — criptografia em repouso (ADR-0007)"
   deletion_window_in_days = 7
   enable_key_rotation     = true
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "EnableRootAccess"
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root" }
+        Action    = "kms:*"
+        Resource  = "*"
+      },
+      {
+        Sid       = "AllowCloudWatchLogs"
+        Effect    = "Allow"
+        Principal = { Service = "logs.${var.aws_region}.amazonaws.com" }
+        Action = [
+          "kms:Encrypt", "kms:Decrypt", "kms:ReEncrypt*",
+          "kms:GenerateDataKey*", "kms:DescribeKey"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
 }
 
 # ===========================================================================
@@ -241,6 +333,23 @@ resource "aws_db_subnet_group" "main" {
   subnet_ids = aws_subnet.private[*].id
 
   tags = { Name = "fluxo-caixa-${local.environment}" }
+}
+
+# Query logging (ADR-0011) — loga queries > 1s (PostgreSQL log_min_duration_statement)
+resource "aws_db_parameter_group" "postgres" {
+  name   = "fluxo-caixa-pg-${local.environment}"
+  family = "postgres16"
+
+  parameter {
+    name  = "log_min_duration_statement"
+    value = "1000"
+  }
+
+  # Encryption in transit (CKV2_AWS_69) — força SSL nas conexões PostgreSQL
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
 }
 
 resource "aws_db_instance" "cashflow" {
@@ -266,6 +375,11 @@ resource "aws_db_instance" "cashflow" {
   backup_retention_period      = local.rds_backup_retention
   skip_final_snapshot          = local.rds_skip_final_snapshot
   performance_insights_enabled = local.rds_performance_insights
+
+  auto_minor_version_upgrade      = true
+  copy_tags_to_snapshot           = true
+  parameter_group_name            = aws_db_parameter_group.postgres.name
+  enabled_cloudwatch_logs_exports = ["postgresql"]
 
   tags = { Name = "fluxo-caixa-${local.environment}" }
 }
@@ -309,6 +423,7 @@ resource "aws_ecs_cluster" "main" {
 resource "aws_cloudwatch_log_group" "app" {
   name              = "/ecs/fluxo-caixa-${local.environment}"
   retention_in_days = local.log_retention_days
+  kms_key_id        = aws_kms_key.main.arn
 }
 
 resource "aws_iam_role" "ecs_execution" {

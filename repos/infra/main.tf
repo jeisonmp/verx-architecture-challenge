@@ -265,10 +265,10 @@ resource "aws_db_instance" "cashflow" {
 # ===========================================================================
 # Mensageria — MSK Serverless (ADR-0003) com IAM auth (ADR-0007)
 # ===========================================================================
-resource "aws_msk_serverlesscluster" "kafka" {
+resource "aws_msk_serverless_cluster" "kafka" {
   cluster_name = "fluxo-caixa-${local.environment}"
 
-  vpc_configs {
+  vpc_config {
     subnet_ids         = aws_subnet.private[*].id
     security_group_ids = [aws_security_group.msk.id]
   }

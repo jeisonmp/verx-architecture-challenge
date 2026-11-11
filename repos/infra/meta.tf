@@ -7,14 +7,17 @@
 # ---------------------------------------------------------------------------
 # Configuração por ambiente — lida de environments/<env>.yaml (ADR-0012 dec5).
 #
-# `file()` + `yamldecode()` são resolvidos em plan/apply (não em validate).
+# `file()` + `yamldecode()` são avaliados também no `validate` — por isso o
+# ambiente "default" (CI, sem backend) precisa mapear para um yaml existente.
 # Um arquivo por ambiente; o topo do YAML é a config daquele env.
 # ---------------------------------------------------------------------------
 locals {
   # Fonte única do ambiente = workspace ativo (dev/qas/prd), isolado via
-  # workspace_key_prefix = "env" no backend.tf. Workspace fora de {dev,qas,prd}
-  # falha no file() abaixo (environments/<ws>.yaml não existe).
-  environment = terraform.workspace
+  # workspace_key_prefix = "env" no backend.tf. No CI (`init -backend=false`)
+  # o workspace é "default" — mapeado para "dev" para o `validate` resolver o
+  # file() abaixo. Workspace real fora de {dev,qas,prd} continua falhando
+  # (environments/<ws>.yaml não existe).
+  environment = terraform.workspace == "default" ? "dev" : terraform.workspace
 
   env = yamldecode(file("${path.module}/environments/${local.environment}.yaml"))
 

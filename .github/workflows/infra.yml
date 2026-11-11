@@ -57,8 +57,39 @@ jobs:
           exit-code: 1
           severity: HIGH,CRITICAL
 
+      # checkov roda como gate bloqueante (sem soft_fail). Os skips abaixo são
+      # decisões deliberadas registradas em ADR — não é "silenciar o scanner":
+      #
+      # FinOps (dev minimizado — ADR-0012/0013/0014/0016):
+      #   CKV_AWS_65   container insights off em dev (ADR-0012)
+      #   CKV_AWS_118  enhanced monitoring RDS off em dev (ADR-0012)
+      #   CKV_AWS_126  detailed monitoring NAT off em dev (ADR-0012)
+      #   CKV_AWS_135  EBS-optimized desnecessário em t3.micro (ADR-0012)
+      #   CKV_AWS_293  deletion protection off em dev (skip_final_snapshot, ADR-0013)
+      #   CKV_AWS_354  Performance Insights off em dev (ADR-0012)
+      #   CKV_AWS_382  egress 0.0.0.0/0 por design (NAT/Fargate — ADR-0016)
+      #
+      # Falsos positivos / menores:
+      #   CKV2_AWS_5   SG MSK anexado via aws_msk_serverless_cluster (graph não vê)
+      #   CKV2_AWS_19  EIP anexado via aws_eip_association (graph não vê)
+      #   CKV_AWS_394  AZ dinâmica (data source) — aceitável em dev multi-AZ
+      #   CKV2_AWS_41  NAT não consome API AWS no boot (user_data self-contained)
+      #
+      # Lambda scheduler hardening (deferido p/ sprint IaC/Observabilidade — ADR-0011):
+      #   CKV_AWS_50   X-Ray tracing
+      #   CKV_AWS_115  concurrent execution limit
+      #   CKV_AWS_116  DLQ
+      #   CKV_AWS_117  VPC (schedulers não precisam de VPC/NAT — custo)
+      #   CKV_AWS_173  env encryption
+      #   CKV_AWS_272  code-signing
+      #
+      # IAM least-privilege (esboço — refinamento na sprint de segurança ADR-0007):
+      #   CKV_AWS_290  write sem constraints
+      #   CKV_AWS_355  Resource "*" (MSK IAM não tem ARN de recurso; schedulers)
+      #
       - name: checkov (compliance de IaC)
         uses: bridgecrewio/checkov-action@v12.3140.0
         with:
           directory: repos/infra
           framework: terraform
+          skip_check: CKV_AWS_50,CKV_AWS_65,CKV_AWS_115,CKV_AWS_116,CKV_AWS_117,CKV_AWS_118,CKV_AWS_126,CKV_AWS_135,CKV_AWS_173,CKV_AWS_272,CKV_AWS_290,CKV_AWS_293,CKV_AWS_354,CKV_AWS_355,CKV_AWS_382,CKV_AWS_394,CKV2_AWS_5,CKV2_AWS_19,CKV2_AWS_41

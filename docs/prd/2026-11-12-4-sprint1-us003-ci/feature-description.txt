@@ -1,0 +1,9 @@
+Feature: 2026-11-12-4-sprint1-us003-ci
+Project: raiz
+Branch: ralph/sprint1-us003-ci
+Description: Sprint 1 — US-003 (CI de Produto: SAST/SCA + Testes/Cobertura)
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Workflow de segurança — SAST + SCA + gitleaks (feat/* → dev)
+- [x] US-002: Workflow de testes + cobertura (dev → master)

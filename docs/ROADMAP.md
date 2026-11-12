@@ -4,7 +4,7 @@
 > Fonte macro de planejamento. Decisões consolidadas viram ADRs em `docs/adrs/`.
 > Modelo C4 (Contexto + Container) mantido no Structurizr (`workspace.dsl`).
 
-## Estado atual (2026-11-11)
+## Estado atual (2026-11-12)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
 - ✅ ADRs 0001..0017 registrados — **todos accepted**.
@@ -16,16 +16,20 @@
 - ✅ **IaC baseline adiantada** — `repos/infra/` com Terraform real (`main.tf`, `backend.tf`, `providers.tf`, schedulers + lambdas, `environments/{dev,qas,prd}`) — ADR-0012/0013/0014/0016.
 - ✅ **FinOps adiantado** — `docs/finops/` com estimativas dev + oficial (CSV) e alvo ~US$ 30/mês.
 - ✅ **Release 1.0.0-beta.1** cortada via semantic-release (2026-11-11).
-- ⏳ `repos/lancamentos` e `repos/consolidado` ainda são scaffold (AGENTS/LICENSE/README) — **sem código**.
+- ✅ **Sprint 1 5/5 concluído** — monorepo A/B, contrato CDC (`schemaVersion`), CI de produto (US-003: SAST/SCA + testes/cobertura), docker-compose e health/logging JSON (US-001..005).
+- ⏳ **Extratores GraphRAG (índice semântico) bloqueados** — PRD `docs/prd/2026-11-12-3-prd-graphrag-extratores/`; US-001 *skipped* por falta de escrita em `/workspace` e `/workspace/ia/graphrag` (fix de permissão pendente).
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
-Sprint 0 **concluído** e **IaC/FinOps adiantados** (baseline Terraform + estimativas
-em `repos/infra/` e `docs/finops/`). O foco agora é o **Sprint 1 — Fundação e
-Ambiente**: monorepo dos microsserviços A/B, contrato CDC (`schemaVersion`), CI de
-produto (§1/§2 da ADR-0005) e execução local completa.
+Sprint 0 **concluído**, **IaC/FinOps adiantados** e **Sprint 1 5/5 fechado**
+(monorepo A/B, contrato CDC, CI de produto SAST/SCA + testes/cobertura,
+docker-compose completo e health/logging JSON). O próximo foco é o
+**Sprint 2 — Microsserviço A · Lançamentos** (`POST /lancamentos` + Transactional Outbox).
 
-> O que resta do Sprint 1 está no PRD `ia/tasks/prd-sprint1-fundacao-ambiente.md`.
+> PRDs do Sprint 1: `docs/prd/2026-11-12-2-sprint1-fundacao-ambiente/` (US-001..005)
+> e `docs/prd/2026-11-12-4-sprint1-us003-ci/` (US-003 — CI).
+> Extratores GraphRAG (`docs/prd/2026-11-12-3-prd-graphrag-extratores/`) seguem
+> **bloqueados** por permissão de escrita — reabrir após fix de ambiente.
 
 ## Premissas (Sprint 0 — propostas, congeladas via ADR)
 
@@ -108,13 +112,13 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 
 ## Sprint 1 — Fundação e Ambiente
 
-> Estado: **em andamento** — ver PRD `ia/tasks/prd-sprint1-fundacao-ambiente.md`.
+> Estado: **5/5 concluído** — Sprint 1 fechado. Ver PRDs `docs/prd/2026-11-12-2-sprint1-fundacao-ambiente/` e `docs/prd/2026-11-12-4-sprint1-us003-ci/`.
 
-- [ ] Monorepo (estrutura dos microsserviços A e B)
-- [ ] CI no GitHub Actions (implementação dos estágios §1/§2 da ADR-0005 — SAST/SCA, testes+cobertura; base de release já em `release.yml`)
-- [ ] Contrato do evento A↔B como teste executável: **CDC — Consumer-Driven Contracts** via Spring Cloud Contract, com `schemaVersion` obrigatório como asserção (ADR-0015)
-- [ ] docker-compose completo (Kafka/MSK, PostgreSQL, apps)
-- [ ] Health checks + structured logging (JSON)
+- [x] Monorepo (estrutura dos microsserviços A e B)
+- [x] CI no GitHub Actions (estágios §1/§2 da ADR-0005 — SAST/SCA + testes/cobertura; base de release em `release.yml`) — **US-003 concluída** (`analysis.yml` CodeQL+gitleaks, `dependabot.yml` SCA, `quality.yml` testes+JaCoCo ≥ 80%)
+- [x] Contrato do evento A↔B como teste executável: **CDC — Consumer-Driven Contracts** via Spring Cloud Contract, com `schemaVersion` obrigatório como asserção (ADR-0015)
+- [x] docker-compose completo (Kafka/MSK, PostgreSQL, apps)
+- [x] Health checks + structured logging (JSON)
 - [x] IaC baseline (VPC, rede, recursos base) — **adiantada** em `repos/infra/` (ADR-0012)
 
 ## Sprint 2 — Microsserviço A · Lançamentos (escrita)

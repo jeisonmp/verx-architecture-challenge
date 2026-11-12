@@ -1,0 +1,8 @@
+Feature: 2026-11-12-3-prd-graphrag-extratores
+Project: raiz
+Branch: ralph/prd-graphrag-extratores
+Description: Extratores GraphRAG — Índice Semântico dos Repos
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Extrator GraphRAG do repo raiz

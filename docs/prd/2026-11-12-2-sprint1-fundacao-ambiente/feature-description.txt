@@ -1,0 +1,12 @@
+Feature: 2026-11-12-2-sprint1-fundacao-ambiente
+Project: raiz
+Branch: ralph/sprint1-fundacao-ambiente
+Description: Sprint 1 — Fundação e Ambiente (Monorepo, CDC, CI e Execução Local)
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Scaffold do monorepo (Lançamentos A e Consolidado B)
+- [x] US-002: Contrato CDC do evento `lancamento.criado`
+- [x] US-003: CI estágios §1/§2 (SAST/SCA + testes+cobertura)
+- [x] US-004: docker-compose completo (PostgreSQL + Kafka + apps A/B)
+- [x] US-005: Health checks + structured logging (JSON)

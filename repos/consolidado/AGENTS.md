@@ -49,7 +49,7 @@ in any form or by any means without express written permission.
   por isso o Dockerfile usa a imagem Maven oficial, não o wrapper.
 - Health check do container consulta `GET /actuator/health`
   (`spring-boot-starter-actuator`, exposto em `application.yml`).
-- Compose completo em `repos/infra/docker-compose.yml` (contexto `../consolidado`).
+- Compose completo em `docker-compose.yml` da raiz (build context `./repos/consolidado`).
 
 ## Logs estruturados e redação LGPD (ADR-0011)
 

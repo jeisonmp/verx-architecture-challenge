@@ -29,11 +29,14 @@ in any form or by any means without express written permission.
 
 ## Execução local (docker compose)
 
-- `docker-compose.yml` (neste diretório) sobe PostgreSQL 16, Kafka
-  (`confluentinc/cp-kafka:7.8.0`, KRaft, broker único) e os apps A/B — build contexts
-  `../lancamentos` e `../consolidado`.
-- Credenciais vêm de `.env` (gitignored; modelo `.env.example`); o compose usa
+> O ambiente local completo vive na **raiz** do monorepo — este diretório é IaC/cloud.
+> Passo a passo, endpoints e health checks: [README raiz — Execução local](../../README.md#execução-local).
+
+- Compose da raiz (`docker-compose.yml`): Structurizr + PostgreSQL 16 + Kafka
+  (`confluentinc/cp-kafka:7.8.0`, KRaft, broker único) + apps A/B — build contexts
+  `./repos/lancamentos` e `./repos/consolidado`.
+- Rodar da raiz: `cp .env.example .env && docker compose up --build`.
+- Credenciais vêm do `.env` da raiz (gitignored; modelo `.env.example`); o compose usa
   `${VAR:?}` obrigatório — sem segredo hardcoded.
-- Schemas `lancamentos`/`consolidado` criados por `postgres/init.sql` (ADR-0013),
-  apenas na primeira inicialização do volume.
-- Rodar da raiz: `cp repos/infra/.env.example repos/infra/.env && docker compose --env-file repos/infra/.env -f repos/infra/docker-compose.yml up --build`.
+- Schemas `lancamentos`/`consolidado` criados por `postgres/init.sql` da raiz
+  (ADR-0013), apenas na primeira inicialização do volume.

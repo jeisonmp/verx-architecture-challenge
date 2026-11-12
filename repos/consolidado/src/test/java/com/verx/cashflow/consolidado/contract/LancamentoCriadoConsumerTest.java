@@ -64,7 +64,7 @@ public class LancamentoCriadoConsumerTest {
 
         // then: B recebe a mensagem do stub (sem A em execução)
         Message<?> received =
-                messageVerifier.receive(TOPIC_LANCAMENTO_CRIADO, 5, TimeUnit.SECONDS).receive();
+                messageVerifier.receive(TOPIC_LANCAMENTO_CRIADO, 5, TimeUnit.SECONDS);
         assertThat(received).isNotNull();
 
         // Tolerant reader (ADR-0015): B desserializa com a PRÓPRIA cópia do DTO,

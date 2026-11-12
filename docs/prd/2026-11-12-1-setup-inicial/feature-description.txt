@@ -1,0 +1,8 @@
+Feature: 2026-11-12-1-setup-inicial
+Project: raiz
+Branch: ralph/setup-inicial
+Description: Setup Inicial — Documentação Técnica Local dos Repos
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Popular docs/ do repo raiz

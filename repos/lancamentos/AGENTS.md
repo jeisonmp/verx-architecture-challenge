@@ -35,7 +35,12 @@ in any form or by any means without express written permission.
   (referenciada por `spring-cloud-contract-maven-plugin` no `pom.xml`).
 - Testes de contrato sobem o contexto com
   `spring.autoconfigure.exclude=...DataSourceAutoConfiguration,...KafkaAutoConfiguration`
-  e publicam no `MessageVerifier` em memória — sem banco/broker reais.
+  e publicam no `MessageVerifierSender` + canal em memória `lancamento.criado` — sem
+  banco/broker reais.
+- O canal em memória é registrado por
+  `com.verx.cashflow.lancamentos.contract.LancamentoCriadoTestChannelConfig`
+  (bean `lancamento.criado` = `PollableChannel` sobre `BlockingQueue`, listado no
+  `classes` do `@SpringBootTest` da base) — sem `spring-integration-core` (YAGNI).
 - O stub consumido por B é gerado/instalado por `./mvnw install`.
 
 ## Execução local (Docker)

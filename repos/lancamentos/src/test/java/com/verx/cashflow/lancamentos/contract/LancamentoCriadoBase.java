@@ -11,7 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verx.cashflow.lancamentos.LancamentosApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.contract.verifier.messaging.MessageVerifier;
+import org.springframework.cloud.contract.verifier.messaging.MessageVerifierSender;
 import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
@@ -21,7 +21,7 @@ import org.springframework.messaging.support.MessageBuilder;
  *
  * <p>O plugin Spring Cloud Contract gera {@code LancamentoCriadoTest} a partir de
  * {@code lancamento-criado.groovy}; o método {@code criarLancamento()} dispara o
- * evento e o {@link MessageVerifier} captura a mensagem para compará-la ao contrato.
+ * evento e o {@link MessageVerifierSender} captura a mensagem para compará-la ao contrato.
  *
  * <p>Sprint 1: não há produtor real (Transactional Outbox entra no Sprint 2), então
  * o evento é construído aqui de forma inline, mantendo o contrato já executável.
@@ -29,7 +29,7 @@ import org.springframework.messaging.support.MessageBuilder;
  * o contrato permanece o mesmo.
  */
 @SpringBootTest(
-        classes = LancamentosApplication.class,
+        classes = {LancamentosApplication.class, LancamentoCriadoTestChannelConfig.class},
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         properties = "spring.autoconfigure.exclude="
                 + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
@@ -38,7 +38,7 @@ import org.springframework.messaging.support.MessageBuilder;
 public abstract class LancamentoCriadoBase {
 
     @Autowired
-    private MessageVerifier<Message<?>> messagingMessageVerifier;
+    private MessageVerifierSender<Message<?>> messagingMessageVerifier;
 
     @Autowired
     private ObjectMapper objectMapper;

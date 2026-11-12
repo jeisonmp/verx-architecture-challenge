@@ -33,8 +33,7 @@ via MDC e stackTrace. Redação LGPD aplicada ao campo message pelo conversion w
                     <fieldName>thread</fieldName>
                 </threadName>
                 <pattern>
-                    <pattern>%maskedMsg</pattern>
-                    <fieldName>message</fieldName>
+                    <pattern>{"message": "%maskedMsg"}</pattern>
                 </pattern>
                 <mdc/>
                 <stackTrace>

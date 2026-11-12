@@ -4,7 +4,7 @@
 > Fonte macro de planejamento. Decisões consolidadas viram ADRs em `docs/adrs/`.
 > Modelo C4 (Contexto + Container) mantido no Structurizr (`workspace.dsl`).
 
-## Estado atual (2026-11-10)
+## Estado atual (2026-11-11)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
 - ✅ ADRs 0001..0017 registrados — **todos accepted**.
@@ -13,14 +13,19 @@
 - ✅ `workspace.dsl` — borda (API Gateway + WAF), DLQ, ator `cliente` e view de **deployment (infra AWS)** — visões L1/L2/L3.
 - ✅ Docs obrigatórias populadas (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`).
 - ✅ Regra anti-monólito distribuído fechada — ADR-0015 (accepted).
+- ✅ **IaC baseline adiantada** — `repos/infra/` com Terraform real (`main.tf`, `backend.tf`, `providers.tf`, schedulers + lambdas, `environments/{dev,qas,prd}`) — ADR-0012/0013/0014/0016.
+- ✅ **FinOps adiantado** — `docs/finops/` com estimativas dev + oficial (CSV) e alvo ~US$ 30/mês.
+- ✅ **Release 1.0.0-beta.1** cortada via semantic-release (2026-11-11).
+- ⏳ `repos/lancamentos` e `repos/consolidado` ainda são scaffold (AGENTS/LICENSE/README) — **sem código**.
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
-Sprint 0 **concluído**: decisões (ADR-0001..0017), C4 (`workspace.dsl`) e docs
-obrigatórias (`BUSINESS.md`, `GLOSSARY.md`, `ARCHITECTURE.md`, `TECH_DEBT.md`)
-congelados.
+Sprint 0 **concluído** e **IaC/FinOps adiantados** (baseline Terraform + estimativas
+em `repos/infra/` e `docs/finops/`). O foco agora é o **Sprint 1 — Fundação e
+Ambiente**: monorepo dos microsserviços A/B, contrato CDC (`schemaVersion`), CI de
+produto (§1/§2 da ADR-0005) e execução local completa.
 
-> Sprints 1+ (código, testes, IaC, FinOps) começam agora.
+> O que resta do Sprint 1 está no PRD `ia/tasks/prd-sprint1-fundacao-ambiente.md`.
 
 ## Premissas (Sprint 0 — propostas, congeladas via ADR)
 
@@ -103,12 +108,14 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 
 ## Sprint 1 — Fundação e Ambiente
 
-- Monorepo (estrutura dos microsserviços A e B)
-- CI no GitHub Actions (implementação dos estágios §1/§2 da ADR-0005 — SAST/SCA, testes+cobertura; base de release já em `release.yml`)
-- Contrato do evento A↔B como teste executável: **CDC — Consumer-Driven Contracts** via Spring Cloud Contract, com `schemaVersion` obrigatório como asserção (ADR-0015)
-- docker-compose completo (Kafka/MSK, PostgreSQL, apps)
-- Health checks + structured logging (JSON)
-- IaC baseline (VPC, rede, recursos base)
+> Estado: **em andamento** — ver PRD `ia/tasks/prd-sprint1-fundacao-ambiente.md`.
+
+- [ ] Monorepo (estrutura dos microsserviços A e B)
+- [ ] CI no GitHub Actions (implementação dos estágios §1/§2 da ADR-0005 — SAST/SCA, testes+cobertura; base de release já em `release.yml`)
+- [ ] Contrato do evento A↔B como teste executável: **CDC — Consumer-Driven Contracts** via Spring Cloud Contract, com `schemaVersion` obrigatório como asserção (ADR-0015)
+- [ ] docker-compose completo (Kafka/MSK, PostgreSQL, apps)
+- [ ] Health checks + structured logging (JSON)
+- [x] IaC baseline (VPC, rede, recursos base) — **adiantada** em `repos/infra/` (ADR-0012)
 
 ## Sprint 2 — Microsserviço A · Lançamentos (escrita)
 

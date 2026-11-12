@@ -1,0 +1,30 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# Dependabot version updates — atualização contínua de dependências (SCA).
+# Complementa o gate de PR em `.github/workflows/dependabot.yml` (Dependency
+# Review) e os Dependabot alerts (habilitados automaticamente em repo público).
+# ADR-0005 §1 — SCA (Dependabot) para vulnerabilidades transitivas.
+
+version: 2
+updates:
+  # Microsserviço A — Lançamentos (escrita)
+  - package-ecosystem: maven
+    directory: /repos/lancamentos
+    schedule:
+      interval: weekly
+
+  # Microsserviço B — Consolidado (leitura)
+  - package-ecosystem: maven
+    directory: /repos/consolidado
+    schedule:
+      interval: weekly
+
+  # GitHub Actions (workflows)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

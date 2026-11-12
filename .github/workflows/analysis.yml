@@ -1,0 +1,81 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# ADR-0005 §1 — PR feat/* → dev: análise de código (gate "0 risco crítico").
+#
+# Roda em todo PR que mira `dev` (gitflow: feat/* e fix/* → dev):
+#   - gitleaks — detecção de segredos (bloqueante em qualquer leak).
+#   - sast     — análise estática (CodeQL) dos dois serviços Maven (A/B).
+#
+# Decisão US-001 (questão em aberto do PRD §9): SAST = CodeQL (default do GitHub
+# Actions), não SonarCloud — zero token/org externo, grátis para repo público e
+# alinhado ao PRD §5 Non-Goals ("análise estática disponível no GitHub Actions").
+#
+# Sem credencial estática (ADR-0005/0007): apenas o GITHUB_TOKEN (OIDC) com escopo
+# mínimo `contents: read` + `security-events: write` (upload SARIF do CodeQL).
+# O OIDC AWS (`id-token: write`) não é necessário aqui — SAST/gitleaks não acessam
+# AWS (ver repos/infra/README.md).
+
+name: analysis
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks (detecção de segredos)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (histórico completo para scan de todo o histórico)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks — detecta segredos (falha em qualquer leak)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sast:
+    name: SAST — CodeQL (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [lancamentos, consolidado]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: java
+          build-mode: manual
+          source-root: repos/${{ matrix.service }}
+
+      - name: Compile (fontes + dependências)
+        run: mvn -B compile
+        working-directory: repos/${{ matrix.service }}
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: ${{ matrix.service }}

@@ -28,6 +28,7 @@ in any form or by any means without express written permission.
         <java.version>21</java.version>
         <jdbi.version>3.47.0</jdbi.version>
         <spring-cloud.version>2024.0.1</spring-cloud.version>
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
     </properties>
 
     <dependencyManagement>
@@ -52,6 +53,12 @@ in any form or by any means without express written permission.
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Logs JSON estruturados + MDC (ADR-0011, US-005) -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>${logstash-logback-encoder.version}</version>
         </dependency>
         <!-- Spring Data JDBC — SQL leve, sem ORM (ADR-0006/0008) -->
         <dependency>

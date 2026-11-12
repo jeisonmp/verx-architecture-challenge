@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+All rights reserved.
+PROPRIETARY AND CONFIDENTIAL.
+No part of this software may be reproduced, distributed, or transmitted
+in any form or by any means without express written permission.
+-->
+<!--
+Logs JSON estruturados no console (ADR-0011).
+Campos: @timestamp, severity, logger, thread, message (mascarada), correlationId/traceId/spanId
+via MDC e stackTrace. Redação LGPD aplicada ao campo message pelo conversion word %maskedMsg.
+-->
+<configuration>
+
+    <conversionRule conversionWord="maskedMsg"
+                    converterClass="com.verx.cashflow.consolidado.infra.logging.SensitiveDataMessageConverter"/>
+
+    <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp>
+                    <timeZone>UTC</timeZone>
+                    <pattern>yyyy-MM-dd'T'HH:mm:ss.SSSXXX</pattern>
+                </timestamp>
+                <logLevel>
+                    <fieldName>severity</fieldName>
+                </logLevel>
+                <loggerName>
+                    <fieldName>logger</fieldName>
+                </loggerName>
+                <threadName>
+                    <fieldName>thread</fieldName>
+                </threadName>
+                <pattern>
+                    <pattern>%maskedMsg</pattern>
+                    <fieldName>message</fieldName>
+                </pattern>
+                <mdc/>
+                <stackTrace>
+                    <fieldName>stackTrace</fieldName>
+                </stackTrace>
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_CONSOLE"/>
+    </root>
+
+</configuration>

@@ -7,3 +7,9 @@
 spring:
   application:
     name: consolidado
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

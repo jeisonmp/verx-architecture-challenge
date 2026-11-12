@@ -7,3 +7,9 @@
 spring:
   application:
     name: lancamentos
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

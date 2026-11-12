@@ -4,6 +4,27 @@
 > Os arquivos `.tf` são **declarados, mas não aplicados** (não há conta AWS real na challenge).
 > Este README é vivo: atualizado a cada decisão da ADR-0012.
 
+## Execução local completa (docker compose)
+
+Sobe **PostgreSQL + Kafka (broker único, KRaft) + apps A/B** localmente, sem cloud:
+
+```bash
+cp repos/infra/.env.example repos/infra/.env          # credenciais local-dev (gitignored)
+docker compose --env-file repos/infra/.env -f repos/infra/docker-compose.yml up --build
+```
+
+| Serviço | Endpoint local |
+| ------- | -------------- |
+| Lançamentos (A) | http://localhost:8080/actuator/health |
+| Consolidado (B) | http://localhost:8081/actuator/health |
+| PostgreSQL | `localhost:5432` (schemas `lancamentos` e `consolidado` — ADR-0013) |
+| Kafka | `kafka:9092` (rede interna do compose) |
+
+- Imagens dos apps: `repos/lancamentos/Dockerfile` e `repos/consolidado/Dockerfile`
+  (multi-stage, non-root, healthcheck em `/actuator/health`).
+- As variáveis vêm do `.env` (gitignored); o compose não contém credenciais de produção.
+- O `.env.example` traz apenas valores de dev local.
+
 ## Organização dos repositórios (monorepo)
 
 ```

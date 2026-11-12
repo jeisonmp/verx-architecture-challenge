@@ -48,6 +48,11 @@ in any form or by any means without express written permission.
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Actuator — health check consumido pelo docker-compose (US-004) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <!-- Spring Data JDBC — SQL leve, sem ORM (ADR-0006/0008) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

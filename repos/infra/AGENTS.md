@@ -26,3 +26,14 @@ in any form or by any means without express written permission.
 - O `LICENSE` deste repo segue o **Modelo Filho** e contém a cláusula
   **"Powered by Backforend"**.
 - Skill de governança de PI: `backforend-copyright`.
+
+## Execução local (docker compose)
+
+- `docker-compose.yml` (neste diretório) sobe PostgreSQL 16, Kafka
+  (`confluentinc/cp-kafka:7.8.0`, KRaft, broker único) e os apps A/B — build contexts
+  `../lancamentos` e `../consolidado`.
+- Credenciais vêm de `.env` (gitignored; modelo `.env.example`); o compose usa
+  `${VAR:?}` obrigatório — sem segredo hardcoded.
+- Schemas `lancamentos`/`consolidado` criados por `postgres/init.sql` (ADR-0013),
+  apenas na primeira inicialização do volume.
+- Rodar da raiz: `cp repos/infra/.env.example repos/infra/.env && docker compose --env-file repos/infra/.env -f repos/infra/docker-compose.yml up --build`.

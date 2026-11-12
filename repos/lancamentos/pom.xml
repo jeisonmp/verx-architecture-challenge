@@ -117,6 +117,51 @@ in any form or by any means without express written permission.
                     <baseClassForTests>com.verx.cashflow.lancamentos.contract.LancamentoCriadoBase</baseClassForTests>
                 </configuration>
             </plugin>
+            <!-- JaCoCo — cobertura de código (ADR-0005 §2 / US-002).
+                 `prepare-agent` instrumenta as classes; `report` gera o relatório já
+                 no `test` (mvn test produz cobertura); `check` (goal verify) falha o
+                 build se a cobertura de linhas ficar abaixo de 80%. A meta de 90% no
+                 núcleo outbox/inbox é deferida (núcleo não existe — PRD §9). -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>coverage-check</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

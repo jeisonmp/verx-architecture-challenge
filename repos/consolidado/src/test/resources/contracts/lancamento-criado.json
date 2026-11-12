@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3f7e2a1c-9d4b-4c6a-8b1e-2a5d9f0c7e11",
+  "eventType": "lancamento.criado",
+  "occurredAt": "2026-11-12T10:30:00.000-03:00",
+  "lancamento": {
+    "id": "a1b2c3d4-e5f6-4a5b-8c7d-9e0f1a2b3c4d",
+    "tipo": "ENTRADA",
+    "valor": 150.00,
+    "data": "2026-11-12T10:30:00.000-03:00",
+    "descricao": "Venda — pagamento recebido"
+  }
+}

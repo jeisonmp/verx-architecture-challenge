@@ -8,84 +8,54 @@ package com.verx.cashflow.consolidado.contract;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.TimeUnit;
+import java.io.IOException;
+import java.io.InputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.verx.cashflow.consolidado.ConsolidadoApplication;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.contract.stubrunner.StubTrigger;
-import org.springframework.cloud.contract.stubrunner.spring.AutoConfigureStubRunner;
-import org.springframework.cloud.contract.stubrunner.spring.StubRunnerProperties;
-import org.springframework.cloud.contract.verifier.messaging.MessageVerifier;
-import org.springframework.cloud.contract.verifier.messaging.boot.AutoConfigureMessageVerifier;
-import org.springframework.messaging.Message;
 
 /**
- * Teste de integração do consumidor (B) contra o stub gerado pelo produtor (A).
+ * Prova do contrato {@code lancamento.criado} no lado do consumidor (B) — ADR-0015.
  *
- * <p>ADR-0015 (CDC): B consome o stub do evento {@code lancamento.criado} sem depender
- * de A em execução. O stub é carregado do repositório local pelo Spring Cloud Contract
- * Stub Runner; B o desserializa como <em>tolerant reader</em> (cópia própria do DTO,
- * ignorando campos desconhecidos) e valida o {@code schemaVersion} obrigatório.
- *
- * <p>Pré-requisito no host: {@code ./mvnw -f repos/lancamentos install} (gera e instala
- * o stub) antes de {@code ./mvnw -f repos/consolidado test}.
+ * <p>Com o Stub Runner de messaging removido no Spring Cloud Contract 4.x, B não sobe
+ * mais o stub de A. Este teste unitário desserializa um fixture JSON (espelho do corpo
+ * do contrato {@code lancamento-criado.groovy} de A) usando o DTO próprio de B
+ * ({@link LancamentoCriadoEvent}) e valida os campos que B consome. O DTO é um
+ * <em>tolerant reader</em> — {@code @JsonIgnoreProperties(ignoreUnknown = true)}
+ * descarta os campos que B não consome ({@code eventId}, {@code occurredAt},
+ * {@code data}, {@code descricao}).
  */
-@SpringBootTest(
-        classes = ConsolidadoApplication.class,
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        properties = "spring.autoconfigure.exclude="
-                + "org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,"
-                + "org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration")
-@AutoConfigureMessageVerifier
-@AutoConfigureStubRunner(
-        ids = {"com.verx.cashflow:lancamentos:+:stubs:8080"},
-        stubsMode = StubRunnerProperties.StubsMode.LOCAL)
-public class LancamentoCriadoConsumerTest {
+class LancamentoCriadoConsumerTest {
 
-    private static final String TOPIC_LANCAMENTO_CRIADO = "lancamento.criado";
+    /** Fixture no classpath: espelho do corpo do contrato lancamento.criado de A. */
+    private static final String FIXTURE_LANCAMENTO_CRIADO = "contracts/lancamento-criado.json";
 
-    @Autowired
-    private StubTrigger stubTrigger;
-
-    @Autowired
-    private MessageVerifier<Message<?>> messageVerifier;
-
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
-    void deveConsumirStubDoLancamentoCriadoComSchemaVersionObrigatorio() throws Exception {
-        // when: o stub do produtor (A) publica o evento no tópico
-        stubTrigger.trigger("lancamento.criado");
+    void deveDesserializarLancamentoCriadoComoTolerantReader() throws IOException {
+        // when: B lê o corpo do contrato publicado por A (fixture equivalente ao stub)
+        LancamentoCriadoEvent event = carregarFixture();
 
-        // then: B recebe a mensagem do stub (sem A em execução)
-        Message<?> received =
-                messageVerifier.receive(TOPIC_LANCAMENTO_CRIADO, 5, TimeUnit.SECONDS);
-        assertThat(received).isNotNull();
-
-        // Tolerant reader (ADR-0015): B desserializa com a PRÓPRIA cópia do DTO,
-        // ignorando campos desconhecidos (eventId, occurredAt, data, descricao).
-        LancamentoCriadoEvent event =
-                objectMapper.readValue(payloadAsString(received.getPayload()), LancamentoCriadoEvent.class);
-
-        // ADR-0015: schemaVersion é obrigatório desde a v1 — a ausência ou versão
-        // desconhecida faz B rejeitar a mensagem (DLQ).
+        // then: schemaVersion é obrigatório e fixado em 1 (ADR-0015) — ausência ou
+        // versão desconhecida faz B rejeitar a mensagem via DLQ.
         assertThat(event.schemaVersion()).isEqualTo(1);
         assertThat(event.eventType()).isEqualTo("lancamento.criado");
+
+        // B consome apenas id/tipo/valor do lancamento — o restante é ignorado.
         assertThat(event.lancamento()).isNotNull();
         assertThat(event.lancamento().id()).isNotBlank();
         assertThat(event.lancamento().tipo()).isIn("ENTRADA", "SAIDA");
         assertThat(event.lancamento().valor()).isNotNull();
     }
 
-    private static String payloadAsString(Object payload) {
-        if (payload instanceof byte[] bytes) {
-            return new String(bytes, StandardCharsets.UTF_8);
+    private LancamentoCriadoEvent carregarFixture() throws IOException {
+        try (InputStream in =
+                getClass().getClassLoader().getResourceAsStream(FIXTURE_LANCAMENTO_CRIADO)) {
+            assertThat(in)
+                    .as("fixture %s deve existir no classpath", FIXTURE_LANCAMENTO_CRIADO)
+                    .isNotNull();
+            return objectMapper.readValue(in, LancamentoCriadoEvent.class);
         }
-        return String.valueOf(payload);
     }
 }

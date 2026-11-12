@@ -93,12 +93,6 @@ in any form or by any means without express written permission.
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!-- CDC — Spring Cloud Contract Stub Runner (B consome o stub de A sem depender de A em execução, ADR-0015) -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>

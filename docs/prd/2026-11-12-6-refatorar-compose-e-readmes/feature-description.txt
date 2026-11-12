@@ -1,0 +1,12 @@
+Feature: 2026-11-12-6-refatorar-compose-e-readmes
+Project: raiz
+Branch: ralph/refatorar-compose-e-readmes
+Description: Consolidar o compose local na raiz e reorganizar os READMEs
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Consolidar o compose local na raiz
+- [x] US-002: Mover os artefatos de dev para a raiz
+- [x] US-003: Reescrever o README da raiz (arquitetura + subir + testes)
+- [x] US-004: Reduzir o README de infra ao escopo IaC
+- [x] US-005: Atualizar AGENTS.md e referências cruzadas

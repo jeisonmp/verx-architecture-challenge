@@ -4,45 +4,36 @@
 > Os arquivos `.tf` são **declarados, mas não aplicados** (não há conta AWS real na challenge).
 > Este README é vivo: atualizado a cada decisão da ADR-0012.
 
-## Execução local completa (docker compose)
+## Execução local
 
-Sobe **PostgreSQL + Kafka (broker único, KRaft) + apps A/B** localmente, sem cloud:
+O ambiente de desenvolvimento completo (**Structurizr + PostgreSQL + Kafka + apps A/B**)
+sobe pelo `docker-compose.yml` da **raiz** do repositório. Passo a passo, endpoints e
+health checks: [README raiz — Execução local](../../README.md#execução-local).
 
-```bash
-cp repos/infra/.env.example repos/infra/.env          # credenciais local-dev (gitignored)
-docker compose --env-file repos/infra/.env -f repos/infra/docker-compose.yml up --build
-```
-
-| Serviço | Endpoint local |
-| ------- | -------------- |
-| Lançamentos (A) | http://localhost:8080/actuator/health |
-| Consolidado (B) | http://localhost:8081/actuator/health |
-| PostgreSQL | `localhost:5432` (schemas `lancamentos` e `consolidado` — ADR-0013) |
-| Kafka | `kafka:9092` (rede interna do compose) |
-
-- Imagens dos apps: `repos/lancamentos/Dockerfile` e `repos/consolidado/Dockerfile`
-  (multi-stage, non-root, healthcheck em `/actuator/health`).
-- As variáveis vêm do `.env` (gitignored); o compose não contém credenciais de produção.
-- O `.env.example` traz apenas valores de dev local.
+> Este diretório não contém mais instruções de execução local — o escopo aqui é IaC/cloud.
 
 ## Organização dos repositórios (monorepo)
 
 ```
-repos/
-├── lancamentos/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
-├── consolidado/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
-└── infra/       # IaC (Terraform) — declarado, sem apply
-    ├── README.md
-    ├── backend.tf     # state remoto S3 + locking nativo (use_lockfile = true) + workspace_key_prefix
-    ├── providers.tf   # provider AWS + required_version >= 1.10
-    ├── variables.tf   # variáveis (região, ambiente, RDS, Fargate)
-    ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
-    ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
-    ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
-    ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0016)
-    ├── lambda/rds_scheduler/  # código Python do stop/start
-    ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
-    └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
+raiz/
+├── docker-compose.yml   # ambiente local completo (Structurizr + PostgreSQL + Kafka + apps A/B)
+├── .env.example         # credenciais de dev local (copie para `.env` — gitignored)
+├── postgres/init.sql    # schemas `lancamentos`/`consolidado` (ADR-0013)
+└── repos/
+    ├── lancamentos/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
+    ├── consolidado/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
+    └── infra/       # IaC (Terraform) — declarado, sem apply (sem compose local)
+        ├── README.md
+        ├── backend.tf     # state remoto S3 + locking nativo (use_lockfile = true) + workspace_key_prefix
+        ├── providers.tf   # provider AWS + required_version >= 1.10
+        ├── variables.tf   # variáveis (região, ambiente, RDS, Fargate)
+        ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
+        ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
+        ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
+        ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0016)
+        ├── lambda/rds_scheduler/  # código Python do stop/start
+        ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
+        └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
 ```
 
 ## Arquitetura de infra (alvo — produção)

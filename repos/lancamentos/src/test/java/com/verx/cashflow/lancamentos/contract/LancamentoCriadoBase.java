@@ -38,7 +38,7 @@ import org.springframework.messaging.support.MessageBuilder;
 public abstract class LancamentoCriadoBase {
 
     @Autowired
-    private MessageVerifierSender<Message<?>> messagingMessageVerifier;
+    private MessageVerifierSender<Message<?>> messagingMessageSender;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -54,7 +54,7 @@ public abstract class LancamentoCriadoBase {
                     .withPayload(json)
                     .setHeader("contentType", "application/json")
                     .build();
-            messagingMessageVerifier.send(message, "lancamento.criado");
+            messagingMessageSender.send(message, "lancamento.criado");
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(
                     "Falha ao serializar o evento lancamento.criado para o contrato CDC", e);

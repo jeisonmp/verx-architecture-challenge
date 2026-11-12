@@ -107,7 +107,8 @@ in any form or by any means without express written permission.
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-            <!-- CDC — gera o teste do contrato e empacota o stub consumido por B (Stub Runner) -->
+            <!-- CDC — gera o teste do contrato a partir de src/test/resources/contracts.
+                 O stub gerado não é consumido por B (sem Stub Runner de messaging). -->
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>

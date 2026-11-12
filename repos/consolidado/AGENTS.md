@@ -29,13 +29,17 @@ in any form or by any means without express written permission.
 
 ## Contrato CDC (`lancamento.criado`)
 
-- B consome o stub de A via Spring Cloud Contract Stub Runner
-  (`com.verx.cashflow.consolidado.contract.LancamentoCriadoConsumerTest`), sem depender
-  de A em execução (ADR-0015).
-- Pré-requisito: `./mvnw install` em `repos/lancamentos` (instala o stub) antes de
-  `./mvnw test` aqui (Stub Runner em modo LOCAL).
+- B prova o contrato de A por um teste unitário próprio
+  (`com.verx.cashflow.consolidado.contract.LancamentoCriadoConsumerTest`) que
+  desserializa o fixture JSON `src/test/resources/contracts/lancamento-criado.json`
+  (espelho do corpo de `lancamento-criado.groovy` de A) — sem Stub Runner, sem
+  `@SpringBootTest` e sem depender de A em execução (ADR-0015).
+- O fixture reflete o contrato de A (`schemaVersion`, `eventId`, `eventType`,
+  `occurredAt`, `lancamento{id,tipo,valor,data,descricao}`).
 - O DTO do evento é cópia própria (test-scoped) e tolerant reader
   (`@JsonIgnoreProperties(ignoreUnknown = true)`) — nunca importar classes de A.
+- O teste assere `schemaVersion == 1`, `eventType == "lancamento.criado"` e a
+  presença de `lancamento.id/tipo/valor`; os campos não consumidos são ignorados.
 
 ## Execução local (Docker)
 

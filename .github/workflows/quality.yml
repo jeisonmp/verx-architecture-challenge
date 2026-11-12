@@ -12,10 +12,10 @@
 #   - JaCoCo (goal `check`) com gate de cobertura de linhas ≥ 80% (a meta de 90%
 #     no núcleo outbox/inbox é deferida — o núcleo não existe, PRD §9).
 #
-# Job único e sequencial A → B (sem matrix): B consome o stub CDC de A via Stub
-# Runner em modo LOCAL (ADR-0015), então o `mvn install` de A precisa instalar o
-# stub no repositório Maven local (~/.m2) antes do `mvn verify` de B. Jobs de uma
-# matrix rodam em runners separados e não compartilham ~/.m2.
+# Job único e sequencial A → B (sem matrix): mantido por simplicidade (um runner e
+# um log por execução). B NÃO consome mais o stub CDC de A via Stub Runner — esse
+# fluxo de messaging foi removido no Spring Cloud Contract 4.x (ADR-0015). Cada
+# serviço roda apenas `mvn verify` no próprio diretório, sem depender do ~/.m2 de A.
 #
 # Sem credencial estática (ADR-0005/0007): apenas o GITHUB_TOKEN (OIDC) com escopo
 # mínimo `contents: read`. As credenciais `cashflow` do PostgreSQL são credenciais
@@ -86,11 +86,10 @@ jobs:
           java-version: "21"
           cache: maven
 
-      # A: `install` (não só `verify`) para instalar o stub CDC que B consome
-      # (Stub Runner LOCAL — ADR-0015). O gate de cobertura JaCoCo roda no `verify`
-      # dentro do próprio `install`, então A também é bloqueado se < 80%.
-      - name: Testes A (lancamentos) — instala stub CDC para B
-        run: mvn -B install
+      # A: `verify` roda os testes (inclui o teste de contrato gerado) e o gate
+      # JaCoCo (≥ 80%). Nada é instalado em ~/.m2 — B não consome o stub de A.
+      - name: Testes A (lancamentos)
+        run: mvn -B verify
         working-directory: repos/lancamentos
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cashflow
@@ -98,8 +97,9 @@ jobs:
           SPRING_DATASOURCE_PASSWORD: cashflow
           SPRING_KAFKA_BOOTSTRAP_SERVERS: localhost:9092
 
-      # B: `verify` roda testes + gate de cobertura; o stub de A já está em ~/.m2.
-      - name: Testes B (consolidado) — consome stub CDC de A
+      # B: `verify` roda testes + gate de cobertura. O teste CDC de B desserializa
+      # um fixture JSON local (tolerant reader) e não depende de artefato de A.
+      - name: Testes B (consolidado)
         run: mvn -B verify
         working-directory: repos/consolidado
         env:

@@ -13,7 +13,8 @@ import org.springframework.cloud.contract.spec.Contract
  *
  * ADR-0015: A e B não compartilham biblioteca de código — o único acoplamento
  * em runtime é este contrato, versionado por `schemaVersion` (obrigatório).
- * O stub gerado é test-only e consumido por B via Spring Cloud Contract Stub Runner.
+ * O teste gerado é test-only; B prova o mesmo contrato por desserialização de um
+ * fixture JSON próprio (sem Stub Runner de messaging — removido no Contract 4.x).
  */
 Contract.make {
     name("lancamentoCriado")

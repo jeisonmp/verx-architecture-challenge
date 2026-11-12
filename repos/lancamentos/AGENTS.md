@@ -41,7 +41,10 @@ in any form or by any means without express written permission.
   `com.verx.cashflow.lancamentos.contract.LancamentoCriadoTestChannelConfig`
   (bean `lancamento.criado` = `PollableChannel` sobre `BlockingQueue`, listado no
   `classes` do `@SpringBootTest` da base) — sem `spring-integration-core` (YAGNI).
-- O stub consumido por B é gerado/instalado por `./mvnw install`.
+- O plugin gera o teste de contrato a partir de
+  `src/test/resources/contracts/*.groovy`; o stub gerado não é consumido por B —
+  B prova o mesmo contrato desserializando um fixture JSON próprio (ver
+  `repos/consolidado/AGENTS.md` § Contrato CDC).
 
 ## Execução local (Docker)
 

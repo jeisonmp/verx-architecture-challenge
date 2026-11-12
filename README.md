@@ -1,46 +1,69 @@
 # Fluxo de Caixa (CQRS)
 
-Sistema de fluxo de caixa com desacoplamento entre escrita e leitura via CQRS, mensageria e os padrões Transactional Outbox / Inbox.
+Sistema de fluxo de caixa com desacoplamento entre escrita e leitura via CQRS,
+mensageria e os padrões Transactional Outbox / Inbox.
 
 ## Arquitetura (resumo)
 
 | Serviço | Papel | Stack |
 |---|---|---|
-| **CashFlow · Lançamentos** (A) | Escrita — `POST /lancamentos` + Transactional Outbox | Java 21 · Spring Boot 3 · PostgreSQL |
+| **CashFlow · Lançamentos** (A) | Escrita — `POST /lancamentos` + Transactional Outbox | Java 21 · Spring Boot 3 · PostgreSQL · Kafka |
 | **Kafka (MSK Serverless)** | Barramento de eventos (escrita → leitura) | — |
-| **CashFlow · Consolidado** (B) | Leitura — Inbox + projeção, `GET /consolidado` (50 req/s) | Java 21 · Spring Boot 3 · PostgreSQL |
+| **CashFlow · Consolidado** (B) | Leitura — Inbox/idempotência + projeção, `GET /consolidado` (50 req/s) | Java 21 · Spring Boot 3 · PostgreSQL · Kafka |
+| **Structurizr** | Modelo C4 + ADRs | Structurizr DSL |
 
-Decisões em `docs/adrs/` · modelo C4 em `workspace.dsl` (Structurizr) · planejamento em `docs/ROADMAP.md`.
+- **CQRS:** o serviço A grava o lançamento e publica o evento `lancamento.criado` via
+  **Transactional Outbox**; o serviço B consome o evento com **Inbox/idempotência** e
+  mantém a projeção de saldo consultada por `GET /consolidado`.
+- Decisões em `docs/adrs/` · modelo C4 em `workspace.dsl` (Structurizr) ·
+  planejamento em `docs/ROADMAP.md`.
 
 ## Execução local
 
+Pré-requisito: Docker + Docker Compose. O ambiente completo sobe com **um comando**:
+
 ```bash
-docker compose up        # sobe o Structurizr (gestor de C4/ADRs)
+cp .env.example .env      # credenciais de dev local (gitignored)
+docker compose up --build
 ```
 
-Acesse o Structurizr em http://localhost:8089 (modelo C4 + ADRs).
+> O `docker compose` carrega automaticamente o `.env` do diretório do compose (raiz),
+> sem `--env-file`.
 
-## CI/CD, Testes e Validação (ambiente 100% local)
+| Serviço | Endpoint local | Health check |
+|---|---|---|
+| Lançamentos (A) | http://localhost:8080 | http://localhost:8080/actuator/health |
+| Consolidado (B) | http://localhost:8081 | http://localhost:8081/actuator/health |
+| PostgreSQL | `localhost:5432` (schemas `lancamentos` e `consolidado` — ADR-0013) | — |
+| Kafka | `kafka:9092` (rede interna do compose) | — |
+| Structurizr | http://localhost:8089 | — |
 
-> Esta solução **não publica imagens em registry** e **não roda em nuvem** — não há aplicação neste repositório. Todo o ciclo de validação é local: o que é automatizado roda no GitHub Actions; o que exige aplicação em execução é uma **etapa manual** descrita abaixo.
+- Schemas criados na primeira subida do volume por `postgres/init.sql` (ADR-0013).
+- As variáveis vêm do `.env` (gitignored); o compose usa `${VAR:?}` obrigatório —
+  sem credencial hardcoded.
 
-### Fluxo de branches
-
-```
-feat/fix/* → dev → master
-```
+## Testes e validação
 
 ### Automatizado no GitHub Actions
 
 | PR | Etapas | Gate de merge |
 |---|---|---|
 | **`feat/fix/*` → `dev`** | SAST (SonarQube + análise estática do runtime) · SCA (OWASP Dependency-Check/Dependabot) · gitleaks | **0 risco crítico** (médios mitigáveis) |
-| **`dev` → `master`** | Testes unitários + integração (containers: PostgreSQL + Kafka) · cobertura de código | 100% dos testes passando · cobertura ≥ 80% (meta 90% no núcleo outbox/inbox) |
+| **`dev` → `master`** | Testes unitários + integração (containers: PostgreSQL + Kafka) · cobertura de código | 100% dos testes passando · JaCoCo ≥ 80% (meta 90% no núcleo outbox/inbox) |
 | **`master`** | `terraform validate` + Trivy/checkov · release/tag (semantic-release) | — |
+
+### Comandos locais
+
+```bash
+# Testes + cobertura (gate JaCoCo ≥ 80%) — cada serviço
+mvn -B -f repos/lancamentos verify
+mvn -B -f repos/consolidado verify
+```
 
 ### Validação manual (local)
 
-Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no CI** e são executadas manualmente. Os comandos exatos são consolidados quando os serviços existirem (Sprint 1+).
+Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no CI** e
+são executadas manualmente:
 
 1. **DAST (análise dinâmica)** — OWASP ZAP contra a aplicação em execução local:
 
@@ -66,10 +89,19 @@ Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no
    terraform validate && trivy config .
    ```
 
-### Release e tags
+## Fluxo de branches
 
-- Release, versão, `CHANGELOG.md` e tag são derivados dos Conventional Commits pelo semantic-release (base `.github/workflows/release.yml`).
-- A release é disparada no `push` a `master`/`dev` **após o merge** de um PR. A **aprovação do PR** é garantida por **branch protection** (`master` e `dev` com "Require pull request before merging" + ≥1 approval) — não pelo workflow.
+```
+feat/fix/* → dev → master
+```
+
+## Release e tags
+
+- Release, versão, `CHANGELOG.md` e tag são derivados dos Conventional Commits pelo
+  semantic-release (base `.github/workflows/release.yml`).
+- A release é disparada no `push` a `master`/`dev` **após o merge** de um PR. A
+  **aprovação do PR** é garantida por **branch protection** (`master` e `dev` com
+  "Require pull request before merging" + ≥1 approval) — não pelo workflow.
 - A pipeline **não** faz build/push de imagem Docker.
 
 ## Documentação
@@ -77,3 +109,4 @@ Como o ambiente é 100% local (sem cloud/registry), estas etapas **não rodam no
 - `docs/adrs/` — decisões de arquitetura (MADR)
 - `workspace.dsl` — modelo C4
 - `docs/ROADMAP.md` — planejamento
+- `repos/infra/README.md` — IaC/cloud (Terraform, state, FinOps, bootstrap OIDC)

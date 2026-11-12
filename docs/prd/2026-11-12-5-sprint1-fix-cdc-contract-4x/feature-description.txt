@@ -1,0 +1,10 @@
+Feature: 2026-11-12-5-sprint1-fix-cdc-contract-4x
+Project: raiz
+Branch: ralph/sprint1-fix-cdc-contract-4x
+Description: Sprint 1 — Correção do CDC no Spring Cloud Contract 4.x (build + runtime)
+Completed: 2026-11-12
+
+Stories:
+- [x] US-001: Tornar o teste CDC do produtor verde no 4.x (canal em memória)
+- [x] US-002: Reescrever o teste CDC do consumidor como desserialização tolerant reader
+- [x] US-003: Atualizar quality.yml e a documentação (AGENTS.md) para o fluxo CDC 4.x

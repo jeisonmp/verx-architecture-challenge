@@ -1,68 +1,114 @@
 #!/bin/sh
+# ----------------------------------------------------------------------------
 # Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
 # All rights reserved.
 # PROPRIETARY AND CONFIDENTIAL.
 # No part of this software may be reproduced, distributed, or transmitted
 # in any form or by any means without express written permission.
-
-# Maven Wrapper — baixa a distribuição Apache Maven (se ainda não estiver em
-# cache) e executa o mvn repassando todos os argumentos.
 #
-# A URL da distribuição pode ser sobrescrita opcionalmente em
-# .mvn/wrapper/maven-wrapper.properties (chave `distributionUrl`).
+# Apache Maven Wrapper startup script (Apache License 2.0).
+# Canonical generation: `mvn wrapper:wrapper -Dmaven=3.9.9`.
+# ----------------------------------------------------------------------------
 
-set -eu
+if [ -z "$MAVEN_SKIP_RC" ] ; then
 
-# --- resolve o diretório base do script (segue symlinks) ---------------------
+  if [ -f /usr/local/etc/mavenrc ] ; then
+    . /usr/local/etc/mavenrc
+  fi
+
+  if [ -f /etc/mavenrc ] ; then
+    . /etc/mavenrc
+  fi
+
+  if [ -f "$HOME/.mavenrc" ] ; then
+    . "$HOME/.mavenrc"
+  fi
+
+fi
+
+# OS specific support.  $var _must_ be set to either true or false.
+cygwin=false
+mingw=false
+darwin=false
+case "`uname`" in
+  CYGWIN*) cygwin=true ;;
+  MINGW*) mingw=true ;;
+  Darwin*) darwin=true ;;
+esac
+
+# resolve links - $0 may be a softlink
 PRG="$0"
-while [ -h "$PRG" ]; do
-  link=$(ls -ld "$PRG" | sed 's/.* -> //')
-  case "$link" in
-    /*) PRG="$link" ;;
-    *)  PRG="$(dirname "$PRG")/$link" ;;
-  esac
-done
-BASE_DIR=$(CDPATH= cd -P "$(dirname "$PRG")" >/dev/null 2>&1 && pwd)
-
-DISTRIBUTION_URL="https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.9/apache-maven-3.9.9-bin.zip"
-PROPS="$BASE_DIR/.mvn/wrapper/maven-wrapper.properties"
-if [ -f "$PROPS" ]; then
-  override=$(sed -n 's/^[[:space:]]*distributionUrl[[:space:]]*=[[:space:]]*//p' "$PROPS" | tail -n1)
-  [ -n "$override" ] && DISTRIBUTION_URL="$override"
-fi
-
-MAVEN_USER_HOME="${MAVEN_USER_HOME:-$HOME/.m2}"
-DIST_BASE="$MAVEN_USER_HOME/wrapper/dists"
-ZIP_NAME=$(basename "$DISTRIBUTION_URL")
-DIST_DIR="$DIST_BASE/${ZIP_NAME%.zip}"
-MAVEN_HOME="$DIST_DIR/$(ls "$DIST_DIR" 2>/dev/null | head -n1)"
-MVN_BIN="$MAVEN_HOME/bin/mvn"
-
-if [ ! -x "$MVN_BIN" ]; then
-  echo "mvnw: Maven não encontrado no cache — baixando $DISTRIBUTION_URL"
-  mkdir -p "$DIST_DIR"
-  ZIP_PATH="$DIST_BASE/$ZIP_NAME"
-  if command -v curl >/dev/null 2>&1; then
-    curl -fL --silent --show-error -o "$ZIP_PATH" "$DISTRIBUTION_URL"
-  elif command -v wget >/dev/null 2>&1; then
-    wget -O "$ZIP_PATH" "$DISTRIBUTION_URL"
+while [ -h "$PRG" ] ; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
   else
-    echo "mvnw: é necessário curl ou wget para baixar o Maven" >&2
-    exit 1
+    PRG=`dirname "$PRG"`/"$link"
   fi
-  if ! command -v unzip >/dev/null 2>&1; then
-    echo "mvnw: é necessário unzip para extrair o Maven" >&2
-    exit 1
+done
+
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+CLASSPATH=$APP_HOME/.mvn/wrapper/maven-wrapper.jar
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+  if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+    JAVACMD="$JAVA_HOME/jre/sh/java"
+  else
+    JAVACMD="$JAVA_HOME/bin/java"
   fi
-  unzip -q "$ZIP_PATH" -d "$DIST_DIR"
-  rm -f "$ZIP_PATH"
-  MAVEN_HOME="$DIST_DIR/$(ls "$DIST_DIR" | head -n1)"
-  MVN_BIN="$MAVEN_HOME/bin/mvn"
+else
+  JAVACMD=`command -v java 2>/dev/null`
 fi
 
-if [ ! -x "$MVN_BIN" ]; then
-  echo "mvnw: não foi possível localizar o binário mvn em $MAVEN_HOME" >&2
+if [ ! -x "$JAVACMD" ] ; then
+  echo "Error: JAVA_HOME is not defined correctly." >&2
+  echo "  We cannot execute $JAVACMD" >&2
   exit 1
 fi
 
-exec "$MVN_BIN" "$@"
+if [ -z "$JAVA_HOME" ] ; then
+  echo "Warning: JAVA_HOME environment variable is not set." >&2
+fi
+
+# For Cygwin or MSYS, switch paths to Windows format before running java
+if [ "$cygwin" = "true" -o "$mingw" = "true" ] ; then
+  APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+  CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+  JAVACMD=`cygpath --unix "$JAVACMD"`
+fi
+
+WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
+
+if [ ! -r "$APP_HOME/.mvn/wrapper/maven-wrapper.jar" ]; then
+  WRAPPER_JAR_URL=`sed -n 's/^wrapperUrl=//p' "$APP_HOME/.mvn/wrapper/maven-wrapper.properties" 2>/dev/null | tr -d '\r'`
+  if [ -z "$WRAPPER_JAR_URL" ]; then
+    echo "Error: .mvn/wrapper/maven-wrapper.properties (wrapperUrl) not found." >&2
+    exit 1
+  fi
+  echo "Downloading Maven Wrapper from $WRAPPER_JAR_URL"
+  mkdir -p "$APP_HOME/.mvn/wrapper"
+  if command -v wget >/dev/null 2>&1; then
+    wget -q -O "$APP_HOME/.mvn/wrapper/maven-wrapper.jar" "$WRAPPER_JAR_URL"
+  elif command -v curl >/dev/null 2>&1; then
+    curl -fsSL -o "$APP_HOME/.mvn/wrapper/maven-wrapper.jar" "$WRAPPER_JAR_URL"
+  else
+    echo "Error: neither wget nor curl is available to download the Maven Wrapper jar." >&2
+    exit 1
+  fi
+fi
+
+MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-"$APP_HOME"}
+MAVEN_OPTS="${MAVEN_OPTS:--Xmx1024m}"
+
+exec "$JAVACMD" \
+  $MAVEN_OPTS \
+  $MAVEN_DEBUG_OPTS \
+  -classpath "$CLASSPATH" \
+  "-Dmaven.multiModuleProjectDirectory=$MAVEN_PROJECTBASEDIR" \
+  $WRAPPER_LAUNCHER "$@"

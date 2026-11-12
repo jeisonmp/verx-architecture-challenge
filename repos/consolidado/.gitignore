@@ -4,6 +4,7 @@
 # No part of this software may be reproduced, distributed, or transmitted
 # in any form or by any means without express written permission.
 
-# Maven — artefatos locais (nunca versionar)
 target/
-.mvn/wrapper/maven-wrapper.jar
+.idea/
+*.iml
+.vscode/

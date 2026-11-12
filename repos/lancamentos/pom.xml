@@ -1,74 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
-  All rights reserved.
-  PROPRIETARY AND CONFIDENTIAL.
-  No part of this software may be reproduced, distributed, or transmitted
-  in any form or by any means without express written permission.
+Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+All rights reserved.
+PROPRIETARY AND CONFIDENTIAL.
+No part of this software may be reproduced, distributed, or transmitted
+in any form or by any means without express written permission.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.4.5</version>
-    <relativePath/>
-  </parent>
-
-  <groupId>com.backforend.cashflow</groupId>
-  <artifactId>lancamentos</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <name>lancamentos</name>
-  <description>Fluxo de Caixa (CQRS) — Lançamentos (microsserviço de escrita)</description>
-
-  <properties>
-    <java.version>21</java.version>
-    <jdbi.version>3.45.1</jdbi.version>
-  </properties>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-jdbc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jdbi</groupId>
-      <artifactId>jdbi3-core</artifactId>
-      <version>${jdbi.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.jdbi</groupId>
-      <artifactId>jdbi3-spring5</artifactId>
-      <version>${jdbi.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.data</groupId>
-      <artifactId>spring-data-jdbc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.postgresql</groupId>
-      <artifactId>postgresql</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.kafka</groupId>
-      <artifactId>spring-kafka</artifactId>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
+    <parent>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>com.verx.cashflow</groupId>
+    <artifactId>lancamentos</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>lancamentos</name>
+    <description>Microsserviço A — Lançamentos (escrita) da solução Fluxo de Caixa (CQRS)</description>
+
+    <properties>
+        <java.version>21</java.version>
+        <jdbi.version>3.47.0</jdbi.version>
+        <spring-cloud.version>2024.0.1</spring-cloud.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Web/REST (POST /lancamentos — Sprint 2/3) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <!-- Spring Data JDBC — SQL leve, sem ORM (ADR-0006/0008) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jdbc</artifactId>
+        </dependency>
+        <!-- JDBI — núcleo transacional (Outbox) com SQL explícito (ADR-0006/0008) -->
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-core</artifactId>
+            <version>${jdbi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-sqlobject</artifactId>
+            <version>${jdbi.version}</version>
+        </dependency>
+        <!-- PostgreSQL driver (runtime) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- Kafka (Spring Kafka) — publica lancamento.criado (Sprint 2/3) -->
+        <dependency>
+            <groupId>org.springframework.kafka</groupId>
+            <artifactId>spring-kafka</artifactId>
+        </dependency>
+        <!-- Testes -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- CDC — Spring Cloud Contract Verifier (contrato do evento lancamento.criado, ADR-0015) -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- CDC — gera o teste do contrato e empacota o stub consumido por B (Stub Runner) -->
+            <plugin>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <version>4.2.1</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <baseClassForTests>com.verx.cashflow.lancamentos.contract.LancamentoCriadoBase</baseClassForTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

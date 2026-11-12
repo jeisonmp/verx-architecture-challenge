@@ -5,7 +5,7 @@
 // in any form or by any means without express written permission.
 
 /**
- * Infraestrutura — adaptadores concretos (JDBC/JDBI, Spring Data JDBC, Kafka,
- * REST controllers) que implementam as portas declaradas em {@code application}.
+ * Camada de aplicação do microsserviço Lançamentos: casos de uso e
+ * orquestração transacional (Sprint 2/3).
  */
-package com.backforend.cashflow.lancamentos.infra;
+package com.verx.cashflow.lancamentos.application;

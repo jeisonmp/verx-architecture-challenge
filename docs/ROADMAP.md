@@ -18,6 +18,10 @@
 - ✅ **Release 1.0.0-beta.1** cortada via semantic-release (2026-11-11).
 - ✅ **Sprint 1 5/5 concluído** — monorepo A/B, contrato CDC (`schemaVersion`), CI de produto (US-003: SAST/SCA + testes/cobertura), docker-compose e health/logging JSON (US-001..005).
 - ⏳ **Extratores GraphRAG (índice semântico) bloqueados** — PRD `docs/prd/2026-11-12-3-prd-graphrag-extratores/`; US-001 *skipped* por falta de escrita em `/workspace` e `/workspace/ia/graphrag` (fix de permissão pendente).
+- ⏳ **e2e (`./mvnw verify -Pe2e`) + correção do wrapper `./mvnw` deferidos** — o fluxo
+  A→Kafka→B depende de Sprint 2 (A: `POST /lancamentos` + Outbox) e Sprint 3 (B: Inbox +
+  `GET /consolidado`); o wrapper está quebrado (falta `.mvn/wrapper/maven-wrapper.properties`)
+  e será corrigido junto com o e2e.
 
 ## O que fazer PRIMEIRO (ordem de ataque)
 
@@ -150,6 +154,7 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 ## Sprint 6 — Testes de Carga e Validação
 
 - K6/JMeter provando 50 req/s no consolidado
+- e2e funcional (fluxo A→Kafka→B) + correção do wrapper `./mvnw` (deferido do Sprint 1)
 - Cenários de falha (DLQ, autorização, idempotência)
 - Ajustes de performance
 

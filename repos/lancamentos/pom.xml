@@ -112,7 +112,7 @@ in any form or by any means without express written permission.
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
-                <version>4.2.1</version>
+                <version>5.0.3</version>
                 <extensions>true</extensions>
                 <configuration>
                     <baseClassForTests>com.verx.cashflow.lancamentos.contract.LancamentoCriadoBase</baseClassForTests>

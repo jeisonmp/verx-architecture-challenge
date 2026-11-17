@@ -1,0 +1,40 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# ADR-0005 §1 — SCA (varredura de dependências) no PR feat/* → dev.
+#
+# "Dependency Review" usa a base de avisos do GitHub (a mesma que alimenta os
+# Dependabot alerts) para barrar a entrada de dependência com vulnerabilidade
+# CRÍTICA conhecida — gate "0 risco crítico" (ADR-0005 §1).
+#
+# A "atualização" contínua das dependências (Dependabot version updates) fica em
+# `.github/dependabot.yml` (ecossistemas maven A/B + github-actions).
+#
+# Sem credencial estática (ADR-0005/0007): apenas o GITHUB_TOKEN (OIDC) com escopo
+# mínimo `contents: read` + `pull-requests: write` (comentário de resumo no PR).
+
+name: dependabot
+
+on:
+  pull_request:
+    branches: [dev]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sca:
+    name: SCA — dependency review (varredura de dependências)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency review (falha em vulnerabilidade crítica)
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: critical

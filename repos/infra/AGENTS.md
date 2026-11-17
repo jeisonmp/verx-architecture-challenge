@@ -26,3 +26,17 @@ in any form or by any means without express written permission.
 - O `LICENSE` deste repo segue o **Modelo Filho** e contém a cláusula
   **"Powered by Backforend"**.
 - Skill de governança de PI: `backforend-copyright`.
+
+## Execução local (docker compose)
+
+> O ambiente local completo vive na **raiz** do monorepo — este diretório é IaC/cloud.
+> Passo a passo, endpoints e health checks: [README raiz — Execução local](../../README.md#execução-local).
+
+- Compose da raiz (`docker-compose.yml`): Structurizr + PostgreSQL 16 + Kafka
+  (`confluentinc/cp-kafka:7.8.0`, KRaft, broker único) + apps A/B — build contexts
+  `./repos/lancamentos` e `./repos/consolidado`.
+- Rodar da raiz: `cp .env.example .env && docker compose up --build`.
+- Credenciais vêm do `.env` da raiz (gitignored; modelo `.env.example`); o compose usa
+  `${VAR:?}` obrigatório — sem segredo hardcoded.
+- Schemas `lancamentos`/`consolidado` criados por `postgres/init.sql` da raiz
+  (ADR-0013), apenas na primeira inicialização do volume.

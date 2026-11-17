@@ -4,24 +4,36 @@
 > Os arquivos `.tf` são **declarados, mas não aplicados** (não há conta AWS real na challenge).
 > Este README é vivo: atualizado a cada decisão da ADR-0012.
 
+## Execução local
+
+O ambiente de desenvolvimento completo (**Structurizr + PostgreSQL + Kafka + apps A/B**)
+sobe pelo `docker-compose.yml` da **raiz** do repositório. Passo a passo, endpoints e
+health checks: [README raiz — Execução local](../../README.md#execução-local).
+
+> Este diretório não contém mais instruções de execução local — o escopo aqui é IaC/cloud.
+
 ## Organização dos repositórios (monorepo)
 
 ```
-repos/
-├── lancamentos/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
-├── consolidado/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
-└── infra/       # IaC (Terraform) — declarado, sem apply
-    ├── README.md
-    ├── backend.tf     # state remoto S3 + locking nativo (use_lockfile = true) + workspace_key_prefix
-    ├── providers.tf   # provider AWS + required_version >= 1.10
-    ├── variables.tf   # variáveis (região, ambiente, RDS, Fargate)
-    ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
-    ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
-    ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
-    ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0016)
-    ├── lambda/rds_scheduler/  # código Python do stop/start
-    ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
-    └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
+raiz/
+├── docker-compose.yml   # ambiente local completo (Structurizr + PostgreSQL + Kafka + apps A/B)
+├── .env.example         # credenciais de dev local (copie para `.env` — gitignored)
+├── postgres/init.sql    # schemas `lancamentos`/`consolidado` (ADR-0013)
+└── repos/
+    ├── lancamentos/   # Microsserviço A — Lançamentos (POST /lancamentos + Transactional Outbox)
+    ├── consolidado/   # Microsserviço B — Consolidado (GET /consolidado + Inbox/idempotência)
+    └── infra/       # IaC (Terraform) — declarado, sem apply (sem compose local)
+        ├── README.md
+        ├── backend.tf     # state remoto S3 + locking nativo (use_lockfile = true) + workspace_key_prefix
+        ├── providers.tf   # provider AWS + required_version >= 1.10
+        ├── variables.tf   # variáveis (região, ambiente, RDS, Fargate)
+        ├── meta.tf        # locals — lê environments/<env>.yaml (config por ambiente)
+        ├── main.tf        # VPC (+ IGW/NAT Instance), RDS PostgreSQL, MSK Serverless, ECS Fargate, KMS, IAM
+        ├── rds_scheduler.tf  # RDS stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0014)
+        ├── nat_scheduler.tf  # NAT Instance stop/start 10h/dia (dev) — EventBridge + Lambda (ADR-0016)
+        ├── lambda/rds_scheduler/  # código Python do stop/start
+        ├── lambda/nat_scheduler/  # código Python do stop/start da NAT
+        └── environments/  # dev.yaml / qas.yaml / prd.yaml — flags FinOps por ambiente
 ```
 
 ## Arquitetura de infra (alvo — produção)

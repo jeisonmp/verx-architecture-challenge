@@ -4,9 +4,11 @@
 # No part of this software may be reproduced, distributed, or transmitted
 # in any form or by any means without express written permission.
 
-# ADR-0005 §2 — PR dev → master: qualidade (testes + cobertura).
+# ADR-0005 §2 — qualidade (testes + cobertura).
 #
-# Roda em todo PR que mira `master` (gitflow: dev → master):
+# Roda em todo PR que mira `master` (gitflow: dev → master) E em todo PR que mira
+# `dev` (inclui os PRs do Dependabot) — fecha a lacuna de validação de testes nos
+# bumps de dependência, que antes só passavam pelo `compile` do `analysis.yml`:
 #   - testes unitários + integração dos dois serviços Maven (A/B);
 #   - service containers efêmeros PostgreSQL + Kafka (infra de integração);
 #   - JaCoCo (goal `check`) com gate de cobertura de linhas ≥ 80% (a meta de 90%
@@ -26,14 +28,14 @@ name: quality
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, dev]
 
 permissions:
   contents: read
 
 jobs:
   test:
-    name: Testes + cobertura (dev → master)
+    name: Testes + cobertura (PR → master | dev)
     runs-on: ubuntu-latest
 
     services:

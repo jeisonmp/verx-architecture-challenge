@@ -88,7 +88,7 @@ jobs:
       #   CKV_AWS_355  Resource "*" (MSK IAM não tem ARN de recurso; schedulers)
       #
       - name: checkov (compliance de IaC)
-        uses: bridgecrewio/checkov-action@v12.3140.0
+        uses: bridgecrewio/checkov-action@v12.3141.0
         with:
           directory: repos/infra
           framework: terraform

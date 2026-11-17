@@ -28,7 +28,7 @@ in any form or by any means without express written permission.
         <java.version>21</java.version>
         <jdbi.version>3.47.0</jdbi.version>
         <spring-cloud.version>2024.0.1</spring-cloud.version>
-        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
     </properties>
 
     <dependencyManagement>

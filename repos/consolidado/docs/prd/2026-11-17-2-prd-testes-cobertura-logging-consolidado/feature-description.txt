@@ -1,0 +1,11 @@
+Feature: 2026-11-17-2-prd-testes-cobertura-logging-consolidado
+Project: consolidado
+Branch: ralph/prd-testes-cobertura-logging-consolidado
+Description: Testes de cobertura do logging LGPD (consolidado)
+Completed: 2026-11-17
+
+Stories:
+- [x] US-001: Testar CorrelationIdFilter
+- [x] US-002: Testar SensitiveDataMessageConverter
+
+Pending validation: US-001, US-002

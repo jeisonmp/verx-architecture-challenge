@@ -62,6 +62,8 @@ in any form or by any means without express written permission.
   (LGPD §2.1). Teste de regressão: `SensitiveDataMaskerTest`.
 - `CorrelationIdFilter` injeta `correlationId` no MDC (header `X-Correlation-Id`
   sanitizado) e loga apenas método/path/status/duração — nunca headers ou body.
+  Teste de regressão: `CorrelationIdFilterTest` (validação do header, fallback UUID,
+  response header, limpeza do MDC no `finally` e ausência de credenciais na linha de acesso).
 - Formatos novos de credencial entram em `SensitiveDataMasker` e DEVEM ser cobertos
   por `SensitiveDataMaskerTest`.
 - Nunca use `System.out`/`System.err`/`print()` em código de produto: use SLF4J.

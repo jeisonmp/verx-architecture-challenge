@@ -4,7 +4,7 @@
 > Fonte macro de planejamento. Decisões consolidadas viram ADRs em `docs/adrs/`.
 > Modelo C4 (Contexto + Container) mantido no Structurizr (`workspace.dsl`).
 
-## Estado atual (2026-11-12)
+## Estado atual (2026-11-17)
 
 - ✅ Structurizr de pé e validado (`docker-compose.yml` → `structurizr/structurizr local`, porta 8089).
 - ✅ ADRs 0001..0017 registrados — **todos accepted**.
@@ -15,8 +15,10 @@
 - ✅ Regra anti-monólito distribuído fechada — ADR-0015 (accepted).
 - ✅ **IaC baseline adiantada** — `repos/infra/` com Terraform real (`main.tf`, `backend.tf`, `providers.tf`, schedulers + lambdas, `environments/{dev,qas,prd}`) — ADR-0012/0013/0014/0016.
 - ✅ **FinOps adiantado** — `docs/finops/` com estimativas dev + oficial (CSV) e alvo ~US$ 30/mês.
-- ✅ **Release 1.0.0-beta.1** cortada via semantic-release (2026-11-11).
+- ✅ **Releases cortadas via semantic-release** — `v1.0.0-beta.1` (2026-11-11), `v1.0.0-beta.2` (2026-11-17) e `v1.0.0-beta.3` (2026-11-17/18).
 - ✅ **Sprint 1 5/5 concluído** — monorepo A/B, contrato CDC (`schemaVersion`), CI de produto (US-003: SAST/SCA + testes/cobertura), docker-compose e health/logging JSON (US-001..005).
+- ✅ **Dependabot (SCA) em dia** — PRs #33/#34/#35 (spring-boot-starter-parent e spring-cloud-dependencies) mergiadas em `dev`.
+- ✅ **PRD da Sprint 2 criada** — `ia/tasks/2026-11-17-3-sprint2-lancamentos-outbox.md` (POST /lancamentos + Transactional Outbox + relay in-process).
 - ⏳ **Extratores GraphRAG (índice semântico) bloqueados** — PRD `docs/prd/2026-11-12-3-prd-graphrag-extratores/`; US-001 *skipped* por falta de escrita em `/workspace` e `/workspace/ia/graphrag` (fix de permissão pendente).
 - ⏳ **e2e (`./mvnw verify -Pe2e`) + correção do wrapper `./mvnw` deferidos** — o fluxo
   A→Kafka→B depende de Sprint 2 (A: `POST /lancamentos` + Outbox) e Sprint 3 (B: Inbox +
@@ -127,10 +129,15 @@ A infra é **declarada em `.tf`** (sem `terraform apply`) — ver `repos/infra/`
 
 ## Sprint 2 — Microsserviço A · Lançamentos (escrita)
 
-- Endpoint `POST /lancamentos`
-- Schema do banco + **Transactional Outbox** (grava lançamento + evento na mesma transação)
-- Outbox worker (publica no Kafka)
-- Testes unitários + integração
+> **PRD:** `ia/tasks/2026-11-17-3-sprint2-lancamentos-outbox.md` (`project: lancamentos`).
+> Decisões congeladas nesta sprint: **Flyway** (SQL-first) para migração; relay do outbox
+> **in-process** (`@Scheduled` + `FOR UPDATE SKIP LOCKED`); idempotência no POST e fix do
+> wrapper `./mvnw` **deferidos** (Sprint 3/6). ADR-0018 proposta para o relay.
+
+- Endpoint `POST /lancamentos` (validação + `201 Created` + `Location`)
+- Schema do banco (Flyway `V1`) + **Transactional Outbox** (grava lançamento + evento na mesma transação)
+- Outbox worker — relay in-process publicando `lancamento.criado` no Kafka (at-least-once)
+- Testes unitários + integração (Testcontainers PostgreSQL + Kafka; JaCoCo ≥ 80%)
 
 ## Sprint 3 — Microsserviço B · Consolidado (leitura)
 

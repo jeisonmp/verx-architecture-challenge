@@ -1,0 +1,11 @@
+Feature: 2026-11-17-1-testes-cobertura-logging-lancamentos
+Project: lancamentos
+Branch: ralph/testes-cobertura-logging-lancamentos
+Description: Testes de cobertura do logging LGPD (lancamentos) — elevar a cobertura JaCoCo do bundle acima de 80% com testes unitários para CorrelationIdFilter e SensitiveDataMessageConverter.
+Completed: 2026-11-17
+
+Stories:
+- [x] US-001: Testar CorrelationIdFilter
+- [x] US-002: Testar SensitiveDataMessageConverter
+
+Pending validation: US-001, US-002

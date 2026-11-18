@@ -64,9 +64,13 @@ in any form or by any means without express written permission.
 - O conversion word `%maskedMsg` (`SensitiveDataMessageConverter`) aplica
   `SensitiveDataMasker` à mensagem: `Authorization`, `x-api-key`, `Cookie`/`set-cookie`,
   `Bearer`/`Basic` e pares `token`/`password`/`secret` saem como `[REDACTED]`
-  (LGPD §2.1). Teste de regressão: `SensitiveDataMaskerTest`.
+  (LGPD §2.1). Testes de regressão: `SensitiveDataMaskerTest` (padrões de
+  credencial) e `SensitiveDataMessageConverterTest` (conversion word aplica o
+  masker à mensagem formatada, preservando mensagens sem credenciais).
 - `CorrelationIdFilter` injeta `correlationId` no MDC (header `X-Correlation-Id`
   sanitizado) e loga apenas método/path/status/duração — nunca headers ou body.
+  Teste de regressão: `CorrelationIdFilterTest` (MDC no `finally`, UUID para header
+  inválido/ausente, response header e linha de acesso sem credenciais/query string).
 - Formatos novos de credencial entram em `SensitiveDataMasker` e DEVEM ser cobertos
   por `SensitiveDataMaskerTest`.
 - Nunca use `System.out`/`System.err`/`print()` em código de produto: use SLF4J.

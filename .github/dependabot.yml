@@ -16,12 +16,37 @@ updates:
     directory: /repos/lancamentos
     schedule:
       interval: weekly
+    # ADR-0006/0008 — stack pinada em Spring Boot 3.4.x + Spring Cloud 2024.0.x.
+    # Majors (Boot 4, Cloud 2025.x, Contract 5.x) são breaking e exigem migração
+    # coordenada (PR único), não bump rotineiro do Dependabot.
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        versions: [">= 4.0.0"]
+      - dependency-name: "org.springframework.cloud:spring-cloud-dependencies"
+        versions: [">= 2025.0.0"]
+      - dependency-name: "org.springframework.cloud:spring-cloud-contract-maven-plugin"
+        versions: [">= 5.0.0"]
+    groups:
+      spring-boot:
+        patterns: ["org.springframework.boot:*"]
+      spring-cloud:
+        patterns: ["org.springframework.cloud:*"]
 
   # Microsserviço B — Consolidado (leitura)
   - package-ecosystem: maven
     directory: /repos/consolidado
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
+        versions: [">= 4.0.0"]
+      - dependency-name: "org.springframework.cloud:spring-cloud-dependencies"
+        versions: [">= 2025.0.0"]
+    groups:
+      spring-boot:
+        patterns: ["org.springframework.boot:*"]
+      spring-cloud:
+        patterns: ["org.springframework.cloud:*"]
 
   # GitHub Actions (workflows)
   - package-ecosystem: github-actions

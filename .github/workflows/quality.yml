@@ -4,9 +4,11 @@
 # No part of this software may be reproduced, distributed, or transmitted
 # in any form or by any means without express written permission.
 
-# ADR-0005 §2 — PR dev → master: qualidade (testes + cobertura).
+# ADR-0005 §2 — qualidade (testes + cobertura).
 #
-# Roda em todo PR que mira `master` (gitflow: dev → master):
+# Roda em todo PR que mira `master` (gitflow: dev → master) E em todo PR que mira
+# `dev` (inclui os PRs do Dependabot) — fecha a lacuna de validação de testes nos
+# bumps de dependência, que antes só passavam pelo `compile` do `analysis.yml`:
 #   - testes unitários + integração dos dois serviços Maven (A/B);
 #   - service containers efêmeros PostgreSQL + Kafka (infra de integração);
 #   - JaCoCo (goal `check`) com gate de cobertura de linhas ≥ 80% (a meta de 90%
@@ -26,14 +28,14 @@ name: quality
 
 on:
   pull_request:
-    branches: [master]
+    branches: [master, dev]
 
 permissions:
   contents: read
 
 jobs:
   test:
-    name: Testes + cobertura (dev → master)
+    name: Testes + cobertura (PR → master | dev)
     runs-on: ubuntu-latest
 
     services:
@@ -52,25 +54,30 @@ jobs:
           --health-retries 5
 
       # Kafka em modo KRaft (sem ZooKeeper), nó único combinado controller+broker.
+      # Imagem alinhada ao docker-compose local (confluentinc/cp-kafka:7.8.0) — o
+      # tag bitnami/kafka:3.8 foi removido do Docker Hub (US-004 escolheu Confluent).
       # A replicação de tópicos internos é forçada a 1 (nó único), sem a qual o
       # broker não cria os tópicos de offsets/transações.
       kafka:
-        image: bitnami/kafka:3.8
+        image: confluentinc/cp-kafka:7.8.0
         ports:
           - 9092:9092
         env:
-          KAFKA_CFG_NODE_ID: 0
-          KAFKA_CFG_PROCESS_ROLES: controller,broker
-          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@localhost:9093
-          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
-          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
-          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-          KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-          KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-          KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
         options: >-
-          --health-cmd "/opt/bitnami/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list"
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
           --health-interval 10s
           --health-timeout 10s
           --health-retries 10
@@ -89,7 +96,7 @@ jobs:
       # A: `verify` roda os testes (inclui o teste de contrato gerado) e o gate
       # JaCoCo (≥ 80%). Nada é instalado em ~/.m2 — B não consome o stub de A.
       - name: Testes A (lancamentos)
-        run: mvn -B verify
+        run: mvn -B -U verify
         working-directory: repos/lancamentos
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cashflow
@@ -100,7 +107,7 @@ jobs:
       # B: `verify` roda testes + gate de cobertura. O teste CDC de B desserializa
       # um fixture JSON local (tolerant reader) e não depende de artefato de A.
       - name: Testes B (consolidado)
-        run: mvn -B verify
+        run: mvn -B -U verify
         working-directory: repos/consolidado
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/cashflow

@@ -27,7 +27,7 @@ in any form or by any means without express written permission.
     <properties>
         <java.version>21</java.version>
         <jdbi.version>3.47.0</jdbi.version>
-        <spring-cloud.version>2024.0.1</spring-cloud.version>
+        <spring-cloud.version>2024.0.3</spring-cloud.version>
         <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
     </properties>
 
@@ -112,7 +112,7 @@ in any form or by any means without express written permission.
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
-                <version>4.2.1</version>
+                <version>4.3.4</version>
                 <extensions>true</extensions>
                 <configuration>
                     <baseClassForTests>com.verx.cashflow.lancamentos.contract.LancamentoCriadoBase</baseClassForTests>

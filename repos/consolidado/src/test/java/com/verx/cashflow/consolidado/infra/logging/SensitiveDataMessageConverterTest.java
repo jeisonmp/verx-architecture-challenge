@@ -29,7 +29,7 @@ class SensitiveDataMessageConverterTest {
 
         // AC-1: token sensível na mensagem formatada é redigido.
         assertThat(converter.convert(event))
-                .contains("[REDACTED]")
+                .isEqualTo("Authorization: [REDACTED]")
                 .doesNotContain("abc.def");
     }
 

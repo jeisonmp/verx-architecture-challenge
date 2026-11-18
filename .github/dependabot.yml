@@ -17,11 +17,11 @@ updates:
     schedule:
       interval: weekly
     # ADR-0006/0008 — stack pinada em Spring Boot 3.4.x + Spring Cloud 2024.0.x.
-    # Majors (Boot 4, Cloud 2025.x, Contract 5.x) são breaking e exigem migração
-    # coordenada (PR único), não bump rotineiro do Dependabot.
+    # Boot 3.5+ (feature line), Boot 4, Cloud 2025.x e Contract 5.x são breaking
+    # e exigem migração coordenada (PR único), não bump rotineiro do Dependabot.
     ignore:
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
-        versions: [">= 4.0.0"]
+        versions: [">= 3.5.0"]
       - dependency-name: "org.springframework.cloud:spring-cloud-dependencies"
         versions: [">= 2025.0.0"]
       - dependency-name: "org.springframework.cloud:spring-cloud-contract-maven-plugin"
@@ -37,9 +37,11 @@ updates:
     directory: /repos/consolidado
     schedule:
       interval: weekly
+    # ADR-0006/0008 — stack pinada em Spring Boot 3.4.x + Spring Cloud 2024.0.x.
+    # Boot 3.5+ (feature line) e Cloud 2025.x exigem migração coordenada (PR único).
     ignore:
       - dependency-name: "org.springframework.boot:spring-boot-starter-parent"
-        versions: [">= 4.0.0"]
+        versions: [">= 3.5.0"]
       - dependency-name: "org.springframework.cloud:spring-cloud-dependencies"
         versions: [">= 2025.0.0"]
     groups:
@@ -53,3 +55,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Majors de actions (ex: checkout 4→7, gitleaks 2→3, setup-terraform 3→4)
+    # são breaking e exigem validação manual do workflow — não bump rotineiro.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]

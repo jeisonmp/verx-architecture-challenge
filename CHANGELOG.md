@@ -1,3 +1,13 @@
+# [1.0.0-beta.3](https://github.com/jeisonmp/verx-architecture-challenge/compare/v1.0.0-beta.2...v1.0.0-beta.3) (2026-11-18)
+
+
+### Features
+
+* US-001 - Testar CorrelationIdFilter ([961c702](https://github.com/jeisonmp/verx-architecture-challenge/commit/961c702aa2931b8f189853ba8bdef76b07a6191d))
+* US-001 - Testar CorrelationIdFilter ([8bab575](https://github.com/jeisonmp/verx-architecture-challenge/commit/8bab5753d951c0e68dadce0c68ae351d2652d56b))
+* US-002 - Testar SensitiveDataMessageConverter ([3324bad](https://github.com/jeisonmp/verx-architecture-challenge/commit/3324badf21c7888db677e5d93c615c2d69d25449))
+* US-002 - Testar SensitiveDataMessageConverter ([90902fb](https://github.com/jeisonmp/verx-architecture-challenge/commit/90902fbefaaf34fd30dcbefd006bd1214e0d7baa))
+
 # [1.0.0-beta.2](https://github.com/jeisonmp/verx-architecture-challenge/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2026-11-17)
 
 

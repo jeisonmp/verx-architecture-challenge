@@ -1,0 +1,31 @@
+# Copyright (C) 2026 MAX JEISON PRASS TECNOLOGIA LTDA (CNPJ 26.360.770/0001-39)
+# All rights reserved.
+# PROPRIETARY AND CONFIDENTIAL.
+# No part of this software may be reproduced, distributed, or transmitted
+# in any form or by any means without express written permission.
+
+# Imagem de teste BYOI (ADR-028) do microsserviço B — Consolidado (Java 21 / Maven).
+# Contrato canônico: `ralph-engine-cli test-image spec`. Prepara SOMENTE toolchain +
+# cache offline de dependências/plugins; compilar src/test e validar RED/GREEN é do
+# test_runner no runtime (comando injetado pelo broker via `sh -c`).
+
+FROM maven:3.9-eclipse-temurin-21
+
+# Cache Maven fora de /root e de /workspace, legível por 65534:65534 (usuário
+# non-root do runtime). MAVEN_OPTS fixa o repo local em /opt/m2/repository
+# independentemente do ENTRYPOINT da imagem (o broker neutraliza com --entrypoint=).
+# HOME=/tmp satisfaz a escrita fora do basedir read-only.
+ENV MAVEN_CONFIG=/opt/m2 \
+    MAVEN_OPTS="-Dmaven.repo.local=/opt/m2/repository" \
+    HOME=/tmp
+
+WORKDIR /build
+
+# Pré-aquece dependências + plugins offline (NÃO compila src/test nem roda a
+# suite — isso é responsabilidade do test_runner no runtime).
+COPY pom.xml ./
+RUN mvn -q -B dependency:go-offline \
+    && chmod -R a+rX /opt/m2
+
+# Sem ENTRYPOINT customizado — o broker neutraliza com --entrypoint= e injeta o
+# comando de teste via `sh -c`.

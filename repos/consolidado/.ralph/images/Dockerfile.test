@@ -23,8 +23,14 @@ WORKDIR /build
 
 # Pré-aquece dependências + plugins offline (NÃO compila src/test nem roda a
 # suite — isso é responsabilidade do test_runner no runtime).
-COPY pom.xml ./
-RUN mvn -q -B dependency:go-offline \
+COPY pom.xml /tmp/build/pom.xml
+RUN cd /tmp/build \
+    && mvn -B -Dmaven.repo.local=/opt/m2/repository \
+         dependency:resolve -DincludeScope=test \
+         dependency:resolve-plugins \
+         de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies \
+    && find /opt/m2/repository -name '_remote.repositories' -delete \
+    && rm -rf /tmp/build \
     && chmod -R a+rX /opt/m2
 
 # Sem ENTRYPOINT customizado — o broker neutraliza com --entrypoint= e injeta o

@@ -1,3 +1,10 @@
+# [1.0.0-beta.5](https://github.com/jeisonmp/verx-architecture-challenge/compare/v1.0.0-beta.4...v1.0.0-beta.5) (2026-11-20)
+
+
+### Features
+
+* ajusta imagens byoi ([27f3269](https://github.com/jeisonmp/verx-architecture-challenge/commit/27f32696c579d9d0daafd8c75f39c88edeefe828))
+
 # [1.0.0-beta.4](https://github.com/jeisonmp/verx-architecture-challenge/compare/v1.0.0-beta.3...v1.0.0-beta.4) (2026-11-20)
 
 

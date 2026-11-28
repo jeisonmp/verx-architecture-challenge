@@ -6,9 +6,13 @@
 
 package com.verx.cashflow.lancamentos.contract;
 
+import static org.mockito.Mockito.mock;
+
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.messaging.PollableChannel;
+
+import com.verx.cashflow.lancamentos.infra.persistence.LancamentoRepository;
 
 /**
  * Configuração de teste do produtor (A) que registra o canal em memória do
@@ -25,5 +29,16 @@ public class LancamentoCriadoTestChannelConfig {
     @Bean(name = "lancamento.criado")
     PollableChannel lancamentoCriadoChannel() {
         return new LancamentoCriadoChannel();
+    }
+
+    /**
+     * US-002 introduz {@code CriarLancamentoService → LancamentoRepository}; este
+     * teste CDC é DB-free ({@code DataSourceAutoConfiguration} excluído na base), então
+     * um mock satisfaz a dependência sem tocar em banco. O caminho real do outbox não
+     * é exercitado aqui — o contrato publica via {@code MessageVerifierSender}.
+     */
+    @Bean
+    LancamentoRepository lancamentoRepository() {
+        return mock(LancamentoRepository.class);
     }
 }

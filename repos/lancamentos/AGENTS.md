@@ -46,6 +46,21 @@ in any form or by any means without express written permission.
   B prova o mesmo contrato desserializando um fixture JSON próprio (ver
   `repos/consolidado/AGENTS.md` § Contrato CDC).
 
+## Transação JDBI (Transactional Outbox)
+
+- Atomicidade: grave `lancamento` + `outbox_event` na MESMA transação via método
+  `default` anotado com `@Transaction` no `LancamentoRepository`
+  (`gravarLancamentoEOutbox`) — nunca dois `@SqlUpdate` fora de transação. O relay
+  (US-003) segue o mesmo padrão para claim (`FOR UPDATE SKIP LOCKED`) + update de
+  status/`published_at`.
+- O payload do evento (`lancamento.criado`) é serializado pelo `ObjectMapper` do Spring
+  (ISO-8601) a partir de `LancamentoCriadoPayload`, que espelha o contrato CDC sem
+  expor `criadoEm`.
+- Teste CDC DB-free (`LancamentoCriadoBase`) exige um bean `LancamentoRepository`
+  (mock em `LancamentoCriadoTestChannelConfig`) porque `CriarLancamentoService` o
+  injeta — ao adicionar beans que dependam de repositório, forneça um stub no config
+  de teste CDC.
+
 ## Execução local (Docker)
 
 - `Dockerfile` builda com `maven:3.9-eclipse-temurin-21` e roda em
@@ -55,6 +70,28 @@ in any form or by any means without express written permission.
 - Health check do container consulta `GET /actuator/health`
   (`spring-boot-starter-actuator`, exposto em `application.yml`).
 - Compose completo em `docker-compose.yml` da raiz (build context `./repos/lancamentos`).
+
+## Testes — Surefire / JUnit Platform (cache offline BYOI)
+
+- A versão do surefire (3.5.4) e o provider JUnit Platform são **geridos pelo
+  `spring-boot-starter-parent` 3.4.13** — o `pom.xml` NÃO declara
+  `maven-surefire-plugin` nem `surefire-junit-platform`.
+- **Anti-pattern (não repetir):** declarar `surefire-junit-platform` como
+  `<dependency>` do `maven-surefire-plugin` força `junit-platform-launcher:1.12.1`
+  na classpath e conflita com o JUnit 5.11.4 do BOM (`junit-platform-commons/engine:1.11.4`),
+  falhando `mvn test` com "conflicting versions detected". O provider é
+  auto-detectado pelo surefire e o launcher é resolvido na versão **1.11.4**
+  (alinhada ao JUnit 5.11.4 do BOM).
+- O cache offline BYOI (`.ralph/images/Dockerfile.test`) deve pré-aquecer AMBOS:
+  `surefire-junit-platform:3.5.4` (provider, resolvido no runtime do `test`) e
+  `junit-platform-launcher:1.11.4` (launcher alinhado). `go-offline`/`resolve-plugins`
+  NÃO pré-aquecem esses artefatos.
+- `junit-platform-launcher` está declarado como **dependência de teste explícita no
+  `pom.xml`** (sem `<version>` → 1.11.4 do BOM): isso faz o `dependency:resolve
+  -DincludeScope=test` do Dockerfile.test pré-aquecer o launcher — o `dependency:get
+  junit-platform-launcher:1.11.4` no Dockerfile.test torna-se opcional. O provider
+  `surefire-junit-platform:3.5.4` continua exigindo `dependency:get` (não é dep do
+  projeto).
 
 ## Logs estruturados e redação LGPD (ADR-0011)
 

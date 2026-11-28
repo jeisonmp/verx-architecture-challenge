@@ -7,12 +7,20 @@
 package com.verx.cashflow.lancamentos.infra.persistence;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import com.verx.cashflow.lancamentos.domain.Lancamento;
+import com.verx.cashflow.lancamentos.domain.OutboxEvent;
 
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
+import org.jdbi.v3.sqlobject.config.RegisterRowMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
+import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.transaction.Transaction;
 
@@ -71,5 +79,62 @@ public interface LancamentoRepository {
                 lancamento.data(),
                 lancamento.descricao());
         insertOutboxEvent(eventId, lancamento.id(), topic, payload, 1, "PENDING", 0);
+    }
+
+    /**
+     * Reivindica (claim) até {@code batch} eventos {@code PENDING} ordenados por
+     * criação, com {@code FOR UPDATE SKIP LOCKED} dentro de uma transação JDBI
+     * (US-003) — instâncias concorrentes do relay nunca reivindicam a mesma linha.
+     *
+     * <p>{@code payload::text} devolve o JSON do contrato CDC já serializado;
+     * {@link OutboxEventMapper} mapeia as colunas para {@link OutboxEvent}.
+     */
+    @SqlQuery("""
+            SELECT id, aggregate_id, topic, payload::text AS payload
+            FROM outbox_event
+            WHERE status = 'PENDING'
+            ORDER BY created_at
+            LIMIT :batch
+            FOR UPDATE SKIP LOCKED
+            """)
+    @RegisterRowMapper(OutboxEventMapper.class)
+    @Transaction
+    List<OutboxEvent> claimPending(@Bind("batch") int batch);
+
+    /**
+     * Marca o evento como {@code PUBLISHED} com {@code published_at} — sucesso da
+     * publicação (US-003). Atualização atômica de linha única.
+     */
+    @SqlUpdate("""
+            UPDATE outbox_event
+            SET status = 'PUBLISHED', published_at = now()
+            WHERE id = :id
+            """)
+    int markPublished(@Bind("id") UUID id);
+
+    /**
+     * Incrementa {@code tentativas} mantendo {@code PENDING} — falha da publicação
+     * (US-003), para retry no próximo tick (at-least-once).
+     */
+    @SqlUpdate("""
+            UPDATE outbox_event
+            SET tentativas = tentativas + 1
+            WHERE id = :id
+            """)
+    int markFailed(@Bind("id") UUID id);
+
+    /**
+     * Mapeia a projeção do claim para {@link OutboxEvent} (SQL explícito, sem ORM).
+     */
+    class OutboxEventMapper implements RowMapper<OutboxEvent> {
+
+        @Override
+        public OutboxEvent map(ResultSet rs, StatementContext ctx) throws SQLException {
+            return new OutboxEvent(
+                    rs.getObject("id", UUID.class),
+                    rs.getObject("aggregate_id", UUID.class),
+                    rs.getString("topic"),
+                    rs.getString("payload"));
+        }
     }
 }

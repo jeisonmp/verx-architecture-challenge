@@ -8,6 +8,7 @@ package com.verx.cashflow.lancamentos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Microsserviço A — Lançamentos (escrita).
@@ -15,6 +16,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <p>Registra lançamentos e publica o evento {@code lancamento.criado} via
  * Transactional Outbox (implementado no Sprint 2/3 — fora do escopo do scaffold).
  */
+@EnableScheduling
 @SpringBootApplication
 public class LancamentosApplication {
 

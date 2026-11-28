@@ -59,7 +59,35 @@ in any form or by any means without express written permission.
 - Teste CDC DB-free (`LancamentoCriadoBase`) exige um bean `LancamentoRepository`
   (mock em `LancamentoCriadoTestChannelConfig`) porque `CriarLancamentoService` o
   injeta — ao adicionar beans que dependam de repositório, forneça um stub no config
-  de teste CDC.
+  de teste CDC. O `OutboxRelay` (US-003) exige o MESMO tratamento para
+  `KafkaTemplate<String, String>` (mock no `LancamentoCriadoTestChannelConfig`), já
+  que a base exclui `KafkaAutoConfiguration`.
+
+## Outbox Relay (US-003)
+
+- `OutboxRelay` (`infra/relay`) é um `@Component` com `@Scheduled` que publica os
+  eventos `PENDING` do outbox no tópico `lancamento.criado` (key = `aggregate_id`,
+  value = `payload` jsonb já serializado na escrita) — claim → publish → mark.
+- Claim: `LancamentoRepository.claimPending(batch)` combina `@SqlQuery` (SELECT
+  `FOR UPDATE SKIP LOCKED`) + `@RegisterRowMapper` + `@Transaction` num único método
+  SQL Object; `payload::text AS payload` devolve o JSON do contrato CDC. O
+  `OutboxEventMapper` (RowMapper aninhado) mapeia as colunas para o record
+  `OutboxEvent` sem ORM.
+- At-least-once: sucesso → `markPublished` (`PUBLISHED` + `published_at=now()`);
+  falha/`ExecutionException`/`TimeoutException` → `markFailed` (`tentativas+1`,
+  mantém `PENDING`). O `KafkaTemplate.send(...).get(5, SECONDS)` bloqueia para
+  surfacer a falha assíncrona no mesmo tick.
+- `@EnableScheduling` fica em `LancamentosApplication`; `@Scheduled` usa
+  `initialDelayString` (default 5000ms) para o relay não disparar em contextos de
+  teste curtos (CDC).
+- O IT (`OutboxRelayIT`) usa Testcontainers PostgreSQL (`disabledWithoutDocker=true`)
+  + `MockProducer` de `kafka-clients` (transitiva do spring-kafka) como "broker de
+  teste" — SEM nova dependência (`spring-kafka-test`/`testcontainers-kafka`), o que
+  evita `manifest_drift` na imagem BYOI. Envolva o `MockProducer` num
+  `ProducerFactory` anônimo (só `createProducer`/`getConfigurationProperties`/
+  `transactionCapable`) para construir o `KafkaTemplate`.
+- Nunca logue o `payload` do outbox (contém valor/descrição do lançamento — LGPD);
+  logue apenas `evento.id()` e `evento.topic()`.
 
 ## Execução local (Docker)
 

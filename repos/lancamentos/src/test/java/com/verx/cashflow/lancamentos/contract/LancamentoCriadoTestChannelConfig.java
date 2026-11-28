@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.PollableChannel;
 
 import com.verx.cashflow.lancamentos.infra.persistence.LancamentoRepository;
@@ -40,5 +41,17 @@ public class LancamentoCriadoTestChannelConfig {
     @Bean
     LancamentoRepository lancamentoRepository() {
         return mock(LancamentoRepository.class);
+    }
+
+    /**
+     * US-003 introduz {@code OutboxRelay → KafkaTemplate}; este teste CDC é DB-free
+     * e exclui {@code KafkaAutoConfiguration} na base, então um mock satisfaz a
+     * dependência sem broker real. O relay não dispara aqui (initialDelay 5s > vida
+     * do teste) e o {@code claimPending} do mock devolve lista vazia.
+     */
+    @Bean
+    @SuppressWarnings("unchecked")
+    KafkaTemplate<String, String> kafkaTemplate() {
+        return mock(KafkaTemplate.class);
     }
 }

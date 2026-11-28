@@ -1,0 +1,9 @@
+{
+  "test": [
+    "cp", "-a", "/workspace/repos/consolidado/.", "/tmp/work",
+    "&&",
+    "cd", "/tmp/work",
+    "&&",
+    "mvn", "-o", "-B", "test"
+  ]
+}

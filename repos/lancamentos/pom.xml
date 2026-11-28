@@ -49,6 +49,11 @@ in any form or by any means without express written permission.
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+        <!-- Validação jakarta.validation do DTO de entrada (US-002) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
         <!-- Actuator — health check consumido pelo docker-compose (US-004) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -76,6 +81,15 @@ in any form or by any means without express written permission.
             <artifactId>jdbi3-sqlobject</artifactId>
             <version>${jdbi.version}</version>
         </dependency>
+        <!-- Flyway — versionamento SQL-first do schema (US-001, ADR-0006/0008) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
         <!-- PostgreSQL driver (runtime) -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -93,10 +107,32 @@ in any form or by any means without express written permission.
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Launcher JUnit Platform (versão gerida pelo BOM Spring Boot 3.4.13 → 1.11.4):
+             o surefire auto-detecta o provider e resolve o launcher apenas no runtime do
+             `mvn test`; declará-lo explicitamente como dependência de teste faz o
+             `dependency:resolve` do Dockerfile.test pré-aquecer o launcher no cache
+             offline BYOI (go-offline/resolve-plugins NÃO o alcançam) — ver AGENTS.md
+             § Testes. Sem `<version>`: alinhado ao JUnit 5.11.4 do BOM. -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- CDC — Spring Cloud Contract Verifier (contrato do evento lancamento.criado, ADR-0015) -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-contract-verifier</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Testcontainers — integração da migration/repositório em PostgreSQL real (US-001) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -107,6 +143,12 @@ in any form or by any means without express written permission.
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- Surefire: versão + provider JUnit Platform são geridos pelo
+                 spring-boot-starter-parent (surefire 3.5.4). NÃO declarar
+                 `surefire-junit-platform` como plugin dependency — força
+                 junit-platform-launcher 1.12.1 e conflita com o JUnit 5.11.4
+                 (platform 1.11.4) do BOM; o launcher 1.11.4 deve estar no cache
+                 offline BYOI (ver .ralph/images/Dockerfile.test). -->
             <!-- CDC — gera o teste do contrato a partir de src/test/resources/contracts.
                  O stub gerado não é consumido por B (sem Stub Runner de messaging). -->
             <plugin>

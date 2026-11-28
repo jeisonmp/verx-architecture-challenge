@@ -29,7 +29,9 @@ RUN cd /tmp/build \
          dependency:resolve -DincludeScope=test \
          dependency:resolve-plugins \
          de.qaware.maven:go-offline-maven-plugin:1.2.8:resolve-dependencies \
-    && find /opt/m2/repository -name '_remote.repositories' -delete \
+    && mvn -B -Dmaven.repo.local=/opt/m2/repository \
+         dependency:get -Dartifact=org.apache.maven.surefire:surefire-junit-platform:3.5.4 \
+    && find /opt/m2/repository \( -name '_remote.repositories' -o -name '*.lastUpdated' \) -delete \
     && rm -rf /tmp/build \
     && chmod -R a+rX /opt/m2
 
